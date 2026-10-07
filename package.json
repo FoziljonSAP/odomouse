@@ -1,0 +1,14 @@
+{
+  "name": "odomouse",
+  "version": "1.0.0",
+  "description": "Odomouse: how far your mouse travels, keystrokes, clicks and typing speed. Native apps for macOS, Windows and Linux; data stays on the computer.",
+  "license": "GPL-3.0-only",
+  "private": true,
+  "scripts": {
+    "test": "node test/run-all.js",
+    "shots": "node test/ui/shoot.js shots"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}

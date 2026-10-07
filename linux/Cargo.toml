@@ -1,0 +1,19 @@
+[package]
+name = "odomouse"
+version = "1.0.0"
+edition = "2021"
+description = "Odomouse for Linux: tray item, input counting, dashboard in the browser."
+license = "GPL-3.0-only"
+
+# Only the shared core. X11, XRecord, XRandR and D-Bus are loaded at run time
+# with dlopen, so one binary runs on any distro and degrades gracefully when
+# a library is missing.
+[dependencies]
+odomouse-core = { path = "../core" }
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"

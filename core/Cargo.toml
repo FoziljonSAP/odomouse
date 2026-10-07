@@ -1,0 +1,18 @@
+[package]
+name = "odomouse-core"
+version = "0.1.0"
+edition = "2021"
+description = "Shared counting logic for Odomouse (macOS, Windows, Linux). No dependencies."
+license = "GPL-3.0-only"
+
+[lib]
+name = "odomouse_core"
+crate-type = ["rlib", "staticlib", "cdylib"]
+
+[dependencies]
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true

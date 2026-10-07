@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Odomouse: how far does your cursor travel?</title>
+  <meta name="description" content="A tiny free app that counts how far your mouse travels, your keystrokes, clicks and typing speed. macOS, Windows and Linux. Open source; your data stays on your computer.">
+  <meta property="og:title" content="Odomouse">
+  <meta property="og:description" content="How far does your cursor travel? A free, open-source odometer for your mouse.">
+  <meta property="og:image" content="https://odomouse.com/img/card-en.webp">
+  <link rel="icon" href="favicon.png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./" aria-label="Odomouse">
+      <img src="img/icon-256.png" alt="" width="28" height="28">
+      <span>Odomouse</span>
+    </a>
+    <nav class="langs" aria-label="Language">
+      <button data-lang="uz" lang="uz">O'zbekcha</button>
+      <button data-lang="en" lang="en">English</button>
+      <button data-lang="ru" lang="ru">Русский</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1 data-t="h1">How far does your cursor travel?</h1>
+      <p class="lead" data-t="lead">Move your mouse: the counter is measuring this page. Odomouse measures it all day, in every app, along with keystrokes, clicks and typing speed.</p>
+
+      <div class="odo-row">
+        <div class="odo" id="odo" role="img" aria-live="off">
+          <span class="odo-wheels" id="odo-wheels"></span>
+          <span class="odo-unit">m</span>
+        </div>
+        <p class="odo-note" id="odo-note" data-t="odoIdle">Move the mouse over the page</p>
+      </div>
+
+      <div class="get">
+        <a class="download" id="download" href="download/Odomouse.dmg">
+          <span id="download-label">Download for macOS</span>
+          <small id="download-file">Odomouse.dmg</small>
+        </a>
+        <p class="others"><span data-t="others">Also for</span> <span id="other-links"></span></p>
+        <p class="promise" data-t="promise">Free and open source. Your numbers never leave your computer.</p>
+      </div>
+    </section>
+
+    <section class="show" aria-labelledby="show-title">
+      <div class="show-text">
+        <h2 id="show-title" data-t="showTitle">What you see at the end of the day</h2>
+        <ul class="facts">
+          <li data-t="f1">Distance in metres, and in football pitches or Eiffel Towers</li>
+          <li data-t="f2">A keyboard heatmap: which keys you press most</li>
+          <li data-t="f3">Typing speed, clicks, active time and a break reminder</li>
+          <li data-t="f4">Your favourite shortcuts and the apps you spent time in</li>
+          <li data-t="f5">A weekly card to share with friends</li>
+        </ul>
+        <p class="langs-note" data-t="langsNote">In English, Russian and Uzbek. Light and dark.</p>
+      </div>
+      <figure class="shots">
+        <img class="shot-dash" data-src="img/dash-{lang}.webp" src="img/dash-en.webp" width="2200" height="1520" alt="" loading="lazy">
+        <img class="shot-popup" data-src="img/popup-{lang}.webp" src="img/popup-en.webp" width="720" height="1280" alt="" loading="lazy">
+      </figure>
+    </section>
+
+    <section class="card-row" aria-labelledby="card-title">
+      <img class="card" data-src="img/card-{lang}.webp" src="img/card-en.webp" width="720" height="900" alt="" loading="lazy">
+      <div>
+        <h2 id="card-title" data-t="cardTitle">Your week on one card</h2>
+        <p data-t="cardText">Odomouse draws a card with your week: how far the cursor went, keys, clicks and your fastest typing. Save it as a picture or copy it straight into Telegram.</p>
+      </div>
+    </section>
+
+    <section class="privacy" id="privacy" aria-labelledby="privacy-title">
+      <h2 id="privacy-title" data-t="privacyTitle">It counts keys. It does not read what you type.</h2>
+      <p data-t="privacy1">Odomouse notes which key was pressed so it can count it and colour the heatmap. It never stores text, passwords or screenshots.</p>
+      <p data-t="privacy2">There is no account, no advertising and nothing is sent anywhere: all the numbers sit in one file on your computer, and you can export or delete them in Settings.</p>
+      <p data-t="privacy3">The code is open under the GPL-3.0 licence, so anyone can check this.</p>
+      <p><a class="link" id="code-link" href="https://github.com/FoziljonSAP/odomouse" data-t="codeLink">Read the code on GitHub</a></p>
+    </section>
+
+    <section class="first" id="first-open" aria-labelledby="first-title">
+      <h2 id="first-title" data-t="firstTitle">Opening it for the first time</h2>
+      <p class="first-note" data-t="firstNote">The app is not signed with a paid Apple or Microsoft certificate yet, so the system asks once whether you trust it.</p>
+      <div class="os-tabs" role="tablist" aria-labelledby="first-title">
+        <button role="tab" id="tab-windows" aria-controls="steps-windows" data-os="windows">Windows</button>
+        <button role="tab" id="tab-mac" aria-controls="steps-mac" data-os="mac">macOS</button>
+        <button role="tab" id="tab-linux" aria-controls="steps-linux" data-os="linux">Linux</button>
+      </div>
+      <ol class="steps" id="steps-windows" role="tabpanel" aria-labelledby="tab-windows">
+        <li data-t="w1">Run Odomouse-Setup.exe and click Install. No administrator password is needed.</li>
+        <li data-t="w2">If you see "Windows protected your PC", click More info, then Run anyway.</li>
+        <li data-t="w3">The mouse icon appears by the clock, often inside the ^ menu. Drag it onto the taskbar to keep the counter in sight.</li>
+      </ol>
+      <ol class="steps" id="steps-mac" role="tabpanel" aria-labelledby="tab-mac" hidden>
+        <li data-t="m1">Open Odomouse.dmg and drag Odomouse into the Applications folder.</li>
+        <li data-t="m2">Open it from Applications. If macOS says it could not verify the app, go to System Settings, Privacy &amp; Security, and click Open Anyway.</li>
+        <li data-t="m3">To count keys, allow Input Monitoring: right-click the icon in the menu bar and choose "Allow keyboard access".</li>
+      </ol>
+      <ol class="steps" id="steps-linux" role="tabpanel" aria-labelledby="tab-linux" hidden>
+        <li data-t="l1">Double-click odomouse_amd64.deb, or run: sudo apt install ./odomouse_amd64.deb</li>
+        <li data-t="l2">Open Odomouse from the app menu. It needs Ubuntu 22.04, Linux Mint 21, Debian 12 or newer.</li>
+        <li data-t="l3">On Wayland, run once: sudo usermod -aG input $USER, then log out and back in.</li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p><span data-t="foot">Odomouse is free software under the GPL-3.0 licence.</span> <a class="link" id="foot-code" href="https://github.com/FoziljonSAP/odomouse">GitHub</a></p>
+  </footer>
+
+  <script src="site.js"></script>
+</body>
+</html>

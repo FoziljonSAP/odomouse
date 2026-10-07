@@ -1,0 +1,138 @@
+# Builds and tests Odomouse for macOS, Windows and Linux.
+# Every push / pull request: tests + one installer per OS under the run's
+# "Artifacts". A push to main also publishes the website (site/) with the
+# three installers to GitHub Pages (odomouse.com). A tag like v1.0.0 also
+# attaches them to a GitHub Release.
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  core:
+    name: Core tests
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Rust core (unit + JavaScript parity tests)
+        run: cargo test --manifest-path core/Cargo.toml
+      - name: C API smoke test
+        run: sh core/tests/c_smoke.sh
+      - name: Web UI module tests
+        run: node test/run-all.js
+
+  linux:
+    name: Linux
+    needs: core
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: cargo test --manifest-path linux/Cargo.toml
+      - name: Package
+        run: sh linux/package.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: odomouse-linux
+          path: linux/dist/*.deb
+          if-no-files-found: error
+
+  windows:
+    name: Windows
+    needs: core
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Inno Setup
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup --no-progress -y
+          }
+      - name: Build
+        shell: pwsh
+        run: ./windows/build.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: odomouse-windows
+          path: windows/dist/Odomouse-Setup.exe
+          if-no-files-found: error
+
+  macos:
+    name: macOS
+    needs: core
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build (universal, ad-hoc signed)
+        env:
+          ARCHS: arm64 x86_64
+        run: sh macos/build.sh
+      - name: Disk image
+        run: sh macos/dmg.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: odomouse-macos
+          path: macos/dist/Odomouse.dmg
+          if-no-files-found: error
+
+  release:
+    name: Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [linux, windows, macos]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            out/odomouse-linux/*.deb
+            out/odomouse-windows/*.exe
+            out/odomouse-macos/*.dmg
+
+  site:
+    name: Website
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [linux, windows, macos]
+    runs-on: ubuntu-22.04
+    # until Pages is switched on (Settings -> Pages -> Source: GitHub Actions)
+    # this job fails without failing the build
+    continue-on-error: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+      - name: Site with the latest installers
+        run: |
+          mkdir -p site/download
+          cp out/odomouse-windows/Odomouse-Setup.exe site/download/Odomouse-Setup.exe
+          cp out/odomouse-macos/Odomouse.dmg site/download/Odomouse.dmg
+          cp out/odomouse-linux/*.deb site/download/odomouse_amd64.deb
+          printf '{"version":"%s","commit":"%s"}\n' "$(sed -n 's/^version *= *"\(.*\)"/\1/p' linux/Cargo.toml | head -n1)" "${GITHUB_SHA::7}" > site/download/latest.json
+          ls -la site/download
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4

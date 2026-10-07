@@ -1,0 +1,17 @@
+node_modules/
+dist/
+core/target/
+linux/target/
+linux/dist/
+macos/build/
+macos/dist/
+windows/build/
+windows/dist/
+windows/Odomouse/bin/
+windows/Odomouse/obj/
+windows/Odomouse/native/
+*.log
+.DS_Store
+
+# the website gets the latest installers in CI
+site/download/

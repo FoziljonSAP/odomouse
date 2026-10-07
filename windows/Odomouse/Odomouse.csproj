@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    .NET Framework 4.8 is built into Windows 10/11 (and installable on 7/8.1),
+    so the app needs no runtime download and idles at a few MB of RAM.
+    The Rust core is loaded from native\x64 or native\x86 (build.ps1 puts it there).
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>Odomouse</AssemblyName>
+    <RootNamespace>Odomouse</RootNamespace>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <Version>1.0.0</Version>
+    <Product>Odomouse</Product>
+    <Company>Odomouse</Company>
+    <Copyright>Barcha ma'lumot faqat shu kompyuterda saqlanadi.</Copyright>
+    <DebugType>none</DebugType>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\app.ico" LogicalName="app.ico" />
+    <!-- the web UI shared with macOS and Linux -->
+    <None Include="..\..\src\ui\**\*" LinkBase="web\ui" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\core\units.js;..\..\src\core\keyboard.js;..\..\src\core\shortcuts.js;..\..\src\core\fun.js" LinkBase="web\core" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\assets\*.png" LinkBase="web\assets" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="native\**\*.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
