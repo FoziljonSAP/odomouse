@@ -130,6 +130,8 @@
     linux: 'odomouse_amd64.deb',
   };
   const OS_NAMES = { windows: 'Windows', mac: 'macOS', linux: 'Linux' };
+  // where the installers are (a preview copy of the page points at the live site)
+  const BASE = window.ODOMOUSE_DOWNLOADS || 'download/';
 
   // ------------------------------------------------------------ language
   const store = {
@@ -165,7 +167,7 @@
   function renderDownload() {
     const t = T[lang];
     const btn = document.getElementById('download');
-    btn.href = `download/${FILES[os]}`;
+    btn.href = `${BASE}${FILES[os]}`;
     document.getElementById('download-label').textContent = t[{ windows: 'dlWindows', mac: 'dlMac', linux: 'dlLinux' }[os]];
     document.getElementById('download-file').textContent = FILES[os];
     const others = document.getElementById('other-links');
@@ -174,7 +176,7 @@
       if (o === os) continue;
       const a = document.createElement('a');
       a.className = 'link';
-      a.href = `download/${FILES[o]}`;
+      a.href = `${BASE}${FILES[o]}`;
       a.textContent = OS_NAMES[o];
       others.append(a);
     }
