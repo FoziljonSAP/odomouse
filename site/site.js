@@ -11,10 +11,7 @@
       title: "Odomouse: kursoringiz qancha yo'l bosadi?",
       h1: "Kursoringiz qancha yo'l bosadi?",
       lead: "Bu sahifa hozir sizni sanayapti: sichqonchani qimirlating, tugmalarni bosing, bosib ko'ring. Odomouse xuddi shuni kun bo'yi, barcha ilovalarda qiladi.",
-      dlWindows: 'Windows uchun yuklab olish',
-      dlMac: 'macOS uchun yuklab olish',
-      dlLinux: 'Linux uchun yuklab olish',
-      others: 'Boshqa tizimlar uchun:',
+      dlTitle: 'Yuklab oling:',
       promise: "Bepul va ochiq kodli. Raqamlaringiz kompyuteringizdan hech qayerga chiqmaydi.",
       panelTitle: 'Siz, shu sahifada',
       odoIdle: 'Sichqonchani qimirlating',
@@ -64,10 +61,7 @@
       title: 'Odomouse: how far does your cursor travel?',
       h1: 'How far does your cursor travel?',
       lead: 'This page is counting you right now: move the mouse, press some keys, click around. Odomouse does the same all day, in every app.',
-      dlWindows: 'Download for Windows',
-      dlMac: 'Download for macOS',
-      dlLinux: 'Download for Linux',
-      others: 'Also for',
+      dlTitle: 'Download:',
       promise: 'Free and open source. Your numbers never leave your computer.',
       panelTitle: 'You, on this page',
       odoIdle: 'Move the mouse',
@@ -117,10 +111,7 @@
       title: 'Odomouse: сколько проходит ваш курсор?',
       h1: 'Сколько проходит ваш курсор?',
       lead: 'Эта страница считает вас прямо сейчас: подвигайте мышью, понажимайте клавиши, покликайте. Odomouse делает то же самое весь день во всех приложениях.',
-      dlWindows: 'Скачать для Windows',
-      dlMac: 'Скачать для macOS',
-      dlLinux: 'Скачать для Linux',
-      others: 'Для других систем:',
+      dlTitle: 'Скачать:',
       promise: 'Бесплатно и с открытым кодом. Ваши цифры никуда не уходят с компьютера.',
       panelTitle: 'Вы, на этой странице',
       odoIdle: 'Подвигайте мышью',
@@ -169,7 +160,6 @@
   };
 
   const FILES = { windows: 'Odomouse-Setup.exe', mac: 'Odomouse.dmg', linux: 'odomouse_amd64.deb' };
-  const OS_NAMES = { windows: 'Windows', mac: 'macOS', linux: 'Linux' };
   // where the installers are (a preview copy of the page points at the live site)
   const BASE = window.ODOMOUSE_DOWNLOADS || 'download/';
   // road signs, in metres
@@ -216,23 +206,7 @@
   const os = detectOs();
 
   function renderDownloads() {
-    const label = t({ windows: 'dlWindows', mac: 'dlMac', linux: 'dlLinux' }[os]);
-    for (const [btn, lab, file] of [['download', 'download-label', 'download-file'], ['download-2', 'download-label-2', 'download-file-2']]) {
-      $(btn).href = BASE + FILES[os];
-      $(lab).textContent = label;
-      $(file).textContent = FILES[os];
-    }
-    for (const box of document.querySelectorAll('.other-links')) {
-      box.textContent = '';
-      for (const o of ['windows', 'mac', 'linux']) {
-        if (o === os) continue;
-        const a = document.createElement('a');
-        a.className = 'link';
-        a.href = BASE + FILES[o];
-        a.textContent = OS_NAMES[o];
-        box.append(a);
-      }
-    }
+    for (const a of document.querySelectorAll('a.download[data-os]')) a.href = BASE + FILES[a.dataset.os];
   }
 
   // ------------------------------------------------------------- numbers
