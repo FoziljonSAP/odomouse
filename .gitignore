@@ -15,3 +15,4 @@ windows/Odomouse/native/
 
 # the website gets the latest installers in CI
 site/download/
+__pycache__/
