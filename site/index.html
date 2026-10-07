@@ -2,52 +2,87 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Odomouse: how far does your cursor travel?</title>
-  <meta name="description" content="A tiny free app that counts how far your mouse travels, your keystrokes, clicks and typing speed. macOS, Windows and Linux. Open source; your data stays on your computer.">
-  <meta property="og:title" content="Odomouse">
-  <meta property="og:description" content="How far does your cursor travel? A free, open-source odometer for your mouse.">
-  <meta property="og:image" content="https://odomouse.com/img/card-en.webp">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Odomouse</title>
+  <meta name="description" content="How far does your cursor travel? A tiny free app that counts mouse distance, keystrokes, clicks and typing speed on macOS, Windows and Linux. Open source; your data stays on your computer.">
+  <meta property="og:title" content="Odomouse: how far does your cursor travel?">
+  <meta property="og:description" content="A free, open-source odometer for your mouse. macOS, Windows, Linux.">
+  <meta property="og:image" content="https://foziljonsap.github.io/odomouse/img/card-en.webp">
   <link rel="icon" href="favicon.png">
   <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
   <link rel="stylesheet" href="site.css">
 </head>
 <body>
-  <header class="top">
-    <a class="brand" href="./" aria-label="Odomouse">
-      <img src="img/icon-256.png" alt="" width="28" height="28">
-      <span>Odomouse</span>
-    </a>
-    <nav class="langs" aria-label="Language">
-      <button data-lang="uz" lang="uz">O'zbekcha</button>
-      <button data-lang="en" lang="en">English</button>
-      <button data-lang="ru" lang="ru">Русский</button>
-    </nav>
-  </header>
+  <!-- the night road: the hero, where the page measures the visitor -->
+  <section class="night" id="top">
+    <canvas class="trail" id="trail" aria-hidden="true"></canvas>
 
-  <main>
-    <section class="hero">
-      <h1 data-t="h1">How far does your cursor travel?</h1>
-      <p class="lead" data-t="lead">Move your mouse: the counter is measuring this page. Odomouse measures it all day, in every app, along with keystrokes, clicks and typing speed.</p>
+    <header class="top">
+      <a class="brand" href="./" aria-label="Odomouse">
+        <img src="img/icon-256.png" alt="" width="30" height="30">
+        <span>Odomouse</span>
+      </a>
+      <nav class="langs" aria-label="Language">
+        <button data-lang="uz" lang="uz">O'zbekcha</button>
+        <button data-lang="en" lang="en">English</button>
+        <button data-lang="ru" lang="ru">Русский</button>
+      </nav>
+    </header>
 
-      <div class="odo-row">
-        <div class="odo" id="odo" role="img" aria-live="off">
+    <div class="hero">
+      <div class="pitch">
+        <h1 data-t="h1">How far does your cursor travel?</h1>
+        <p class="lead" data-t="lead">This page is counting you right now: move the mouse, press some keys, click around. Odomouse does the same all day, in every app.</p>
+        <div class="cta">
+          <a class="download" id="download" href="download/Odomouse.dmg">
+            <span class="dl-label" id="download-label">Download for macOS</span>
+            <span class="dl-meta" id="download-file">Odomouse.dmg</span>
+          </a>
+          <p class="others"><span data-t="others">Also for</span> <span class="other-links"></span></p>
+          <p class="promise" data-t="promise">Free and open source. Your numbers never leave your computer.</p>
+        </div>
+      </div>
+
+      <!-- instrument panel: the visitor's own numbers on this page -->
+      <div class="panel" aria-labelledby="panel-title">
+        <p class="panel-title" id="panel-title" data-t="panelTitle">You, on this page</p>
+        <div class="odo" id="odo" role="img" aria-label="0.0 m">
           <span class="odo-wheels" id="odo-wheels"></span>
           <span class="odo-unit">m</span>
         </div>
-        <p class="odo-note" id="odo-note" data-t="odoIdle">Move the mouse over the page</p>
+        <p class="odo-note" id="odo-note" data-t="odoIdle">Move the mouse</p>
+        <dl class="gauges">
+          <div class="gauge">
+            <dt data-t="speed">Speed</dt>
+            <dd><span class="num" id="speed">0.0</span> <span class="u" data-t="kmh">km/h</span></dd>
+            <div class="bar" aria-hidden="true"><i id="speed-bar"></i></div>
+          </div>
+          <div class="gauge">
+            <dt data-t="keys">Keys</dt>
+            <dd><span class="num" id="keys">0</span></dd>
+          </div>
+          <div class="gauge">
+            <dt data-t="clicks">Clicks</dt>
+            <dd><span class="num" id="clicks">0</span></dd>
+          </div>
+        </dl>
+        <div class="kb" id="kb" aria-label="Keys you pressed"></div>
+        <p class="kb-note" data-t="kbNote">Press some keys: the busiest ones light up, like the heatmap in the app.</p>
       </div>
+    </div>
 
-      <div class="get">
-        <a class="download" id="download" href="download/Odomouse.dmg">
-          <span id="download-label">Download for macOS</span>
-          <small id="download-file">Odomouse.dmg</small>
-        </a>
-        <p class="others"><span data-t="others">Also for</span> <span id="other-links"></span></p>
-        <p class="promise" data-t="promise">Free and open source. Your numbers never leave your computer.</p>
+    <!-- milestones: road signs the visitor drives past -->
+    <div class="road" aria-labelledby="road-title">
+      <p class="road-title" id="road-title"><span data-t="roadTitle">On the road</span> <span class="road-next" id="road-next"></span></p>
+      <div class="track" id="track">
+        <span class="track-line" aria-hidden="true"></span>
+        <span class="track-done" id="track-done" aria-hidden="true"></span>
+        <span class="car" id="car" aria-hidden="true"></span>
       </div>
-    </section>
+    </div>
+  </section>
 
+  <main>
     <section class="show" aria-labelledby="show-title">
       <div class="show-text">
         <h2 id="show-title" data-t="showTitle">What you see at the end of the day</h2>
@@ -58,7 +93,7 @@
           <li data-t="f4">Your favourite shortcuts and the apps you spent time in</li>
           <li data-t="f5">A weekly card to share with friends</li>
         </ul>
-        <p class="langs-note" data-t="langsNote">In English, Russian and Uzbek. Light and dark.</p>
+        <p class="note" data-t="langsNote">In English, Russian and Uzbek. Light and dark.</p>
       </div>
       <figure class="shots">
         <img class="shot-dash" data-src="img/dash-{lang}.webp" src="img/dash-en.webp" width="2200" height="1520" alt="" loading="lazy">
@@ -68,48 +103,60 @@
 
     <section class="card-row" aria-labelledby="card-title">
       <img class="card" data-src="img/card-{lang}.webp" src="img/card-en.webp" width="720" height="900" alt="" loading="lazy">
-      <div>
+      <div class="card-text">
         <h2 id="card-title" data-t="cardTitle">Your week on one card</h2>
-        <p data-t="cardText">Odomouse draws a card with your week: how far the cursor went, keys, clicks and your fastest typing. Save it as a picture or copy it straight into Telegram.</p>
+        <p data-t="cardText">Odomouse draws your week on one card: how far the cursor went, keys, clicks and your fastest typing. Save it as a picture or paste it straight into a chat.</p>
       </div>
     </section>
 
     <section class="privacy" id="privacy" aria-labelledby="privacy-title">
       <h2 id="privacy-title" data-t="privacyTitle">It counts keys. It does not read what you type.</h2>
-      <p data-t="privacy1">Odomouse notes which key was pressed so it can count it and colour the heatmap. It never stores text, passwords or screenshots.</p>
-      <p data-t="privacy2">There is no account, no advertising and nothing is sent anywhere: all the numbers sit in one file on your computer, and you can export or delete them in Settings.</p>
-      <p data-t="privacy3">The code is open under the GPL-3.0 licence, so anyone can check this.</p>
-      <p><a class="link" id="code-link" href="https://github.com/FoziljonSAP/odomouse" data-t="codeLink">Read the code on GitHub</a></p>
+      <div class="privacy-cols">
+        <p data-t="privacy1">Odomouse notes which key was pressed so it can count it and colour the heatmap. It never stores text, passwords or screenshots.</p>
+        <p data-t="privacy2">There is no account, no advertising and nothing is sent anywhere: all the numbers sit in one file on your computer, and you can export or delete them in Settings.</p>
+        <p data-t="privacy3">The code is open under the GPL-3.0 licence, so anyone can check this.</p>
+      </div>
+      <p><a class="link" href="https://github.com/FoziljonSAP/odomouse" data-t="codeLink">Read the code on GitHub</a></p>
     </section>
 
     <section class="first" id="first-open" aria-labelledby="first-title">
       <h2 id="first-title" data-t="firstTitle">Opening it for the first time</h2>
-      <p class="first-note" data-t="firstNote">The app is not signed with a paid Apple or Microsoft certificate yet, so the system asks once whether you trust it.</p>
+      <p class="note" data-t="firstNote">The app is not signed with a paid Apple or Microsoft certificate yet, so the system asks once whether you trust it.</p>
       <div class="os-tabs" role="tablist" aria-labelledby="first-title">
         <button role="tab" id="tab-windows" aria-controls="steps-windows" data-os="windows">Windows</button>
         <button role="tab" id="tab-mac" aria-controls="steps-mac" data-os="mac">macOS</button>
         <button role="tab" id="tab-linux" aria-controls="steps-linux" data-os="linux">Linux</button>
       </div>
       <ol class="steps" id="steps-windows" role="tabpanel" aria-labelledby="tab-windows">
-        <li data-t="w1">Run Odomouse-Setup.exe and click Install. No administrator password is needed.</li>
-        <li data-t="w2">If you see "Windows protected your PC", click More info, then Run anyway.</li>
-        <li data-t="w3">The mouse icon appears by the clock, often inside the ^ menu. Drag it onto the taskbar to keep the counter in sight.</li>
+        <li data-t="w1"></li>
+        <li data-t="w2"></li>
+        <li data-t="w3"></li>
       </ol>
       <ol class="steps" id="steps-mac" role="tabpanel" aria-labelledby="tab-mac" hidden>
-        <li data-t="m1">Open Odomouse.dmg and drag Odomouse into the Applications folder.</li>
-        <li data-t="m2">Open it from Applications. If macOS says it could not verify the app, go to System Settings, Privacy &amp; Security, and click Open Anyway.</li>
-        <li data-t="m3">To count keys, allow Input Monitoring: right-click the icon in the menu bar and choose "Allow keyboard access".</li>
+        <li data-t="m1"></li>
+        <li data-t="m2"></li>
+        <li data-t="m3"></li>
       </ol>
       <ol class="steps" id="steps-linux" role="tabpanel" aria-labelledby="tab-linux" hidden>
-        <li data-t="l1">Double-click odomouse_amd64.deb, or run: sudo apt install ./odomouse_amd64.deb</li>
-        <li data-t="l2">Open Odomouse from the app menu. It needs Ubuntu 22.04, Linux Mint 21, Debian 12 or newer.</li>
-        <li data-t="l3">On Wayland, run once: sudo usermod -aG input $USER, then log out and back in.</li>
+        <li data-t="l1"></li>
+        <li data-t="l2"></li>
+        <li data-t="l3"></li>
       </ol>
+    </section>
+
+    <section class="again" aria-labelledby="again-title">
+      <h2 id="again-title" data-t="againTitle">So how far does it go in a whole day?</h2>
+      <p class="note" id="again-note"></p>
+      <a class="download" id="download-2" href="download/Odomouse.dmg">
+        <span class="dl-label" id="download-label-2">Download for macOS</span>
+        <span class="dl-meta" id="download-file-2">Odomouse.dmg</span>
+      </a>
+      <p class="others"><span data-t="others">Also for</span> <span class="other-links"></span></p>
     </section>
   </main>
 
   <footer class="foot">
-    <p><span data-t="foot">Odomouse is free software under the GPL-3.0 licence.</span> <a class="link" id="foot-code" href="https://github.com/FoziljonSAP/odomouse">GitHub</a></p>
+    <p><span data-t="foot">Odomouse is free software under the GPL-3.0 licence.</span> <a class="link" href="https://github.com/FoziljonSAP/odomouse">GitHub</a></p>
   </footer>
 
   <script src="site.js"></script>
