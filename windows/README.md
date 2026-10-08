@@ -30,6 +30,7 @@ Natija `windows\dist\` papkasida:
 
 ```
 Odomouse/TrayApp.cs     tray ikonka, oynalar, sozlamalar, fayl saqlash
+Odomouse/TaskbarCounter.cs  vazifalar panelidagi hisoblagich (soat yonida)
 Odomouse/InputHooks.cs  past darajadagi klaviatura va sichqoncha hook'lari (faqat kuzatadi)
 Odomouse/Displays.cs    monitorlar, ularning o'lchami va DPI
 Odomouse/WebWindow.cs   src/ui sahifalari WebView2'da, faqat ochiq paytda yaratiladi

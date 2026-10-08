@@ -138,9 +138,9 @@
     trayWindows: ['Vazifalar paneli', 'Taskbar', 'Панель задач'],
     trayLinux: ['Panel', 'Panel', 'Панель'],
     trayHoverNote: [
-      'Raqam ikonka ustiga sichqonchani olib borganda chiqadi.',
-      'The number shows when you hover over the icon.',
-      'Число видно при наведении на значок.',
+      "Raqam vazifalar panelida, soat yonida turadi. Uni sichqoncha bilan istalgan joyga sudrab qo'yish mumkin.",
+      'The number sits on the taskbar next to the clock. You can drag it anywhere with the mouse.',
+      'Число видно на панели задач рядом с часами. Его можно перетащить мышью в любое место.',
     ],
     launchAtLogin: ['Kompyuter yonganda ishga tushirish', 'Start when the computer starts', 'Запускать при включении компьютера'],
     breakReminder: ['Tanaffus eslatmasi', 'Break reminder', 'Напоминание о перерыве'],

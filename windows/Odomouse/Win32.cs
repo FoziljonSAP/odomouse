@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -135,6 +136,92 @@ namespace Odomouse
             catch (DllNotFoundException) { }
             catch (EntryPointNotFoundException) { }
             return 96;
+        }
+
+        // ---- taskbar counter (TaskbarCounter.cs)
+        public const int WS_EX_LAYERED = 0x00080000;
+        public const int WS_EX_TOOLWINDOW = 0x00000080;
+        public const int WS_EX_NOACTIVATE = 0x08000000;
+        public const int WS_EX_TOPMOST = 0x00000008;
+        public static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+        public const uint SWP_NOSIZE = 0x0001;
+        public const uint SWP_NOMOVE = 0x0002;
+        public const uint SWP_NOZORDER = 0x0004;
+        public const uint SWP_NOACTIVATE = 0x0010;
+        public const uint SWP_SHOWWINDOW = 0x0040;
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        public static extern IntPtr FindWindow(string cls, string title);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        public static extern IntPtr FindWindowEx(IntPtr parent, IntPtr after, string cls, string title);
+
+        [DllImport("user32.dll")]
+        public static extern bool GetWindowRect(IntPtr hwnd, out RECT rect);
+
+        [DllImport("user32.dll")]
+        public static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetShellWindow();
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        public static extern int GetClassName(IntPtr hwnd, StringBuilder name, int max);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SIZE { public int cx; public int cy; }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct BLENDFUNCTION { public byte BlendOp; public byte BlendFlags; public byte SourceConstantAlpha; public byte AlphaFormat; }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool UpdateLayeredWindow(IntPtr hwnd, IntPtr hdcDst, ref POINT pptDst, ref SIZE psize,
+            IntPtr hdcSrc, ref POINT pptSrc, int crKey, ref BLENDFUNCTION pblend, int dwFlags);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetDC(IntPtr hwnd);
+
+        [DllImport("user32.dll")]
+        private static extern int ReleaseDC(IntPtr hwnd, IntPtr hdc);
+
+        [DllImport("gdi32.dll")]
+        private static extern IntPtr CreateCompatibleDC(IntPtr hdc);
+
+        [DllImport("gdi32.dll")]
+        private static extern bool DeleteDC(IntPtr hdc);
+
+        [DllImport("gdi32.dll")]
+        private static extern IntPtr SelectObject(IntPtr hdc, IntPtr obj);
+
+        [DllImport("gdi32.dll")]
+        private static extern bool DeleteObject(IntPtr obj);
+
+        /// <summary>Shows a 32-bit ARGB bitmap as the whole window, alpha included.</summary>
+        public static void SetLayeredBitmap(IntPtr hwnd, Bitmap bmp, System.Drawing.Point pos)
+        {
+            IntPtr screen = GetDC(IntPtr.Zero);
+            IntPtr mem = CreateCompatibleDC(screen);
+            IntPtr hbmp = IntPtr.Zero, old = IntPtr.Zero;
+            try
+            {
+                hbmp = bmp.GetHbitmap(Color.FromArgb(0));
+                old = SelectObject(mem, hbmp);
+                var size = new SIZE { cx = bmp.Width, cy = bmp.Height };
+                var src = new POINT { X = 0, Y = 0 };
+                var dst = new POINT { X = pos.X, Y = pos.Y };
+                var blend = new BLENDFUNCTION { BlendOp = 0, BlendFlags = 0, SourceConstantAlpha = 255, AlphaFormat = 1 /* AC_SRC_ALPHA */ };
+                UpdateLayeredWindow(hwnd, screen, ref dst, ref size, mem, ref src, 0, ref blend, 2 /* ULW_ALPHA */);
+            }
+            finally
+            {
+                if (old != IntPtr.Zero) SelectObject(mem, old);
+                if (hbmp != IntPtr.Zero) DeleteObject(hbmp);
+                DeleteDC(mem);
+                ReleaseDC(IntPtr.Zero, screen);
+            }
         }
 
         public static uint DpiAt(int x, int y)

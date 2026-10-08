@@ -41,6 +41,8 @@ namespace Odomouse
         private Dictionary<string, object> settings = new Dictionary<string, object>();
         private string lastTip;
         private bool webViewWarned;
+        private TaskbarCounter counter;   // today's number on the taskbar, like the macOS menu bar
+        private string counterText = "";
 
         public static string DataDir => Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Odomouse");
@@ -69,10 +71,18 @@ namespace Odomouse
             var menu = new ContextMenuStrip();
             statsItem = menu.Items.Add("", null, (s, e) => OpenDashboard("stats"));
             settingsItem = menu.Items.Add("", null, (s, e) => OpenDashboard("settings"));
+            counterItem = menu.Items.Add("", null, (s, e) => counter?.ResetPlace());
             menu.Items.Add(new ToolStripSeparator());
             quitItem = menu.Items.Add("", null, (s, e) => ExitThread());
             tray = new NotifyIcon { Icon = AppIcon, Text = "Odomouse", ContextMenuStrip = menu, Visible = true };
             tray.MouseClick += (s, e) => { if (e.Button == MouseButtons.Left) TogglePopup(); };
+            try
+            {
+                counter = new TaskbarCounter(AppIcon) { TrayMenu = menu };
+                counter.Clicked += TogglePopup;
+                counter.DoubleClicked += () => OpenDashboard("stats");
+            }
+            catch (Exception) { counter = null; } // the tray icon still works without it
 
             timer = new System.Windows.Forms.Timer { Interval = 1000 };
             timer.Tick += (s, e) => Tick();
@@ -116,10 +126,26 @@ namespace Odomouse
                     tray.ShowBalloonTip(15000, note["title"] as string, note["body"] as string, ToolTipIcon.Info);
             }
             if (popup != null && popup.Visible) PushLive();
+            KeepCounter();
+        }
+
+        /// <summary>Show the counter unless "Icon only" is chosen; re-place it above the taskbar.</summary>
+        private void KeepCounter()
+        {
+            if (counter == null) return;
+            try
+            {
+                bool wanted = counterText.Length > 0;
+                counter.SetText(counterText);
+                counter.Keep(wanted);
+                if (counterItem != null) counterItem.Visible = wanted;
+            }
+            catch (Exception) { }
         }
 
         private void SetTip(string text)
         {
+            counterText = text ?? "";
             string tip = string.IsNullOrEmpty(text) ? "Odomouse" : "Odomouse: " + text;
             if (tip.Length > 63) tip = tip.Substring(0, 63); // NotifyIcon limit on .NET Framework
             if (tip == lastTip) return;
@@ -138,6 +164,7 @@ namespace Odomouse
             {
                 core.SetDisplays(Displays.Json());
                 dashboard?.Emit("displays", core.Call("getDisplays"));
+                try { counter?.Relayout(); } catch (Exception) { }
             }));
         }
 
@@ -202,7 +229,7 @@ namespace Odomouse
 
         // menu and dialog texts in the current language (from the core)
         private Dictionary<string, object> strings = new Dictionary<string, object>();
-        private ToolStripItem statsItem, settingsItem, quitItem;
+        private ToolStripItem statsItem, settingsItem, counterItem, quitItem;
 
         private string S(string key) => strings.TryGetValue(key, out object v) && v is string str ? str : key;
 
@@ -212,6 +239,7 @@ namespace Odomouse
                       ?? new Dictionary<string, object>();
             statsItem.Text = S("stats");
             settingsItem.Text = S("settings");
+            counterItem.Text = S("counterReset");
             quitItem.Text = S("quit");
         }
 
@@ -222,6 +250,7 @@ namespace Odomouse
             popup?.ApplyTheme();
             dashboard?.ApplyTheme();
             SetTip(core.TrayText());
+            KeepCounter();
             if (!broadcast) return;
             string json = Json.Serialize(settings);
             popup?.Emit("settings", json);
@@ -470,6 +499,7 @@ namespace Odomouse
             hooks.Dispose();
             popup?.Dispose();
             dashboard?.Dispose();
+            counter?.Dispose();
             tray.Visible = false;
             tray.Dispose();
             core.Dispose(); // saves today

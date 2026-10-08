@@ -151,10 +151,11 @@ const STRINGS: &[(&str, &str, &str, &str)] = &[
     ("trayHintTitle", "Odomouse shu yerda", "Odomouse is here", "Odomouse здесь"),
     (
         "trayHintBody",
-        "Belgi doim ko'rinib tursin desangiz, uni ^ ichidan vazifalar paneliga sudrab chiqaring.",
-        "To keep the counter in sight, drag its icon from the ^ menu onto the taskbar.",
-        "Чтобы счётчик всегда был виден, перетащите значок из меню ^ на панель задач.",
+        "Bugungi hisob vazifalar panelida, soat yonida turadi. Uni sichqoncha bilan istalgan joyga sudrab qo'yish mumkin.",
+        "Today's count sits on the taskbar next to the clock. You can drag it anywhere with the mouse.",
+        "Счёт за сегодня виден на панели задач рядом с часами. Его можно перетащить мышью в любое место.",
     ),
+    ("counterReset", "Hisoblagichni joyiga qaytarish", "Put the counter back by the clock", "Вернуть счётчик к часам"),
     ("resetTitle", "Barcha statistika o'chirilsinmi?", "Delete all statistics?", "Удалить всю статистику?"),
     (
         "resetDetail",
