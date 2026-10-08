@@ -191,9 +191,6 @@ namespace Odomouse
         private static extern IntPtr CreateCompatibleDC(IntPtr hdc);
 
         [DllImport("gdi32.dll")]
-        private static extern bool DeleteDC(IntPtr hdc);
-
-        [DllImport("gdi32.dll")]
         private static extern IntPtr SelectObject(IntPtr hdc, IntPtr obj);
 
         [DllImport("gdi32.dll")]
