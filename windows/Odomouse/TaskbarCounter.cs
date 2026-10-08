@@ -115,7 +115,7 @@ namespace Odomouse
                         if (text.Length > 0)
                         {
                             using (var brush = new SolidBrush(ink))
-                                g.DrawString(text, font, brush, pad + iconSize + gap, (h - textSize.Height) / 2f - scale * 0.5f, StringFormat.GenericTypographic);
+                                g.DrawString(text, font, brush, pad + iconSize + gap, (h - textSize.Height) / 2f - (float)(scale * 0.5), StringFormat.GenericTypographic);
                         }
                     }
                     Size = new Size(w, h);
