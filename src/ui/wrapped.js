@@ -6,7 +6,7 @@
   const U = window.OdomouseUnits;
   const UI = window.OdomouseUI;
 
-  const SITE = 'odomouse.com';
+  const SITE = 'foziljonsap.github.io/odomouse';
   const W = 1080;
   const H = 1350;
   const PAD = 84;

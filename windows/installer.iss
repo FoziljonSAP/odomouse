@@ -66,6 +66,8 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
 
 [Run]
 Filename: "{app}\Odomouse.exe"; Description: "{cm:Launch}"; Flags: nowait postinstall skipifsilent
+; an update started from the app (/SILENT): start the new version again, quietly
+Filename: "{app}\Odomouse.exe"; Parameters: "--background"; Flags: nowait; Check: WizardSilent
 
 [UninstallRun]
 ; save today's numbers and exit; taskkill only if it is still there

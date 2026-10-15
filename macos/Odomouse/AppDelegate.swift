@@ -4,7 +4,8 @@ import UserNotifications
 
 /// Wires macOS (menu bar, windows, input, displays, notifications) to the
 /// Rust core. It only decides *when*; the core decides *what* to count.
-final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSWindowDelegate, BridgeHost {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSWindowDelegate, BridgeHost,
+    UNUserNotificationCenterDelegate {
     private var core: Core!
     private var input: InputMonitor!
 
@@ -19,6 +20,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSW
     private var timer: Timer?
     private var lastTray: String?
     private var settings: [String: Any] = [:]
+    /// A newer version found by the daily check (from the core).
+    private var update: [String: Any]?
+    private var updateBusy = false
 
     static let dataDir: URL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         .appendingPathComponent("Odomouse", isDirectory: true)
@@ -62,6 +66,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSW
         applySettings(broadcast: false)
         input.start()
 
+        UNUserNotificationCenter.current().delegate = self
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
 
         let t = Timer(timeInterval: 1, repeats: true) { [weak self] _ in self?.tick() }
@@ -100,8 +105,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSW
         if let out = JSON.object(core.tick(cursor: cursor)) {
             if let tray = out["tray"] as? String { setTray(tray) }
             if let n = out["notify"] as? [String: Any], let title = n["title"] as? String, let body = n["body"] as? String {
-                notify(title: title, body: body)
+                notify(title: title, body: body, id: n["kind"] as? String ?? "break")
             }
+            if let feed = out["checkUpdate"] as? String { checkUpdate(feed: feed, manual: false, reply: nil) }
         }
         if popover.isShown { pushLive() }
     }
@@ -128,6 +134,78 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSW
         let request = UNNotificationRequest(identifier: id, content: content, trigger: nil)
         UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
     }
+
+    // MARK: - notifications
+
+    /// Show notifications even while a page of the app is in front.
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
+                                withCompletionHandler done: @escaping (UNNotificationPresentationOptions) -> Void) {
+        done([.banner, .list])
+    }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+                                withCompletionHandler done: @escaping () -> Void) {
+        if response.notification.request.identifier == "update" { installUpdate() }
+        done()
+    }
+
+    // MARK: - updates
+
+    /// Download latest.json and let the core decide. `reply`: "Check now" in Settings.
+    private func checkUpdate(feed: String, manual: Bool, reply: ((String) -> Void)?) {
+        Updater.fetchText(feed) { [weak self] body, error in
+            guard let self = self else { return }
+            guard let body = body else {
+                reply?("{\"error\":\(JSON.quote(error))}")
+                return
+            }
+            let result = self.core.call("updateFeed", JSON.string([body, manual] as [Any]))
+            if let r = JSON.object(result), r["error"] == nil {
+                self.update = r["update"] as? [String: Any]
+                if let n = r["notify"] as? [String: Any], let t = n["title"] as? String, let b = n["body"] as? String {
+                    self.notify(title: t, body: b, id: "update")
+                }
+                self.reloadSettings()
+                self.applySettings() // the pages show the new version
+            }
+            reply?(result)
+        }
+    }
+
+    /// Download the new disk image, check it, then replace this app and
+    /// restart. Where that is not possible, the image opens in Finder; if
+    /// anything fails, the website opens.
+    private func installUpdate() {
+        guard let u = update, !updateBusy else { return }
+        let page = URL(string: u["page"] as? String ?? "")
+        let version = u["version"] as? String ?? ""
+        guard let url = URL(string: u["url"] as? String ?? ""), url.scheme == "https", url.pathExtension == "dmg",
+              let sha = u["sha256"] as? String, sha.count == 64 else {
+            if let p = URL(string: u["url"] as? String ?? "") ?? page { NSWorkspace.shared.open(p) }
+            return
+        }
+        updateBusy = true
+        notify(title: "Odomouse \(version)", body: s("updateDownloading"), id: "updating")
+        Updater.downloadImage(url, sha256: sha, version: version) { [weak self] dmg in
+            guard let self = self else { return }
+            self.updateBusy = false
+            guard let dmg = dmg else {
+                let alert = NSAlert()
+                alert.messageText = self.s("updateFailed")
+                alert.runModal()
+                if let page = page { NSWorkspace.shared.open(page) }
+                return
+            }
+            self.core.save()
+            if Updater.canReplaceSelf && Updater.replaceSelf(with: dmg) {
+                NSApp.terminate(nil)
+            } else {
+                NSWorkspace.shared.open(dmg)
+            }
+        }
+    }
+
+    @objc private func menuUpdate() { installUpdate() }
 
     // MARK: - settings
 
@@ -268,6 +346,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSW
             menu.addItem(status)
             menu.addItem(withTitle: s("grantKeyboard"), action: #selector(menuPermissions), keyEquivalent: "").target = self
         }
+        if let v = update?["version"] as? String {
+            menu.addItem(.separator())
+            menu.addItem(withTitle: s("updateMenu").replacingOccurrences(of: "{v}", with: v),
+                         action: #selector(menuUpdate), keyEquivalent: "").target = self
+        }
         menu.addItem(.separator())
         menu.addItem(withTitle: s("stats"), action: #selector(menuStats), keyEquivalent: "").target = self
         menu.addItem(withTitle: s("settings"), action: #selector(menuSettings), keyEquivalent: "").target = self
@@ -375,8 +458,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSW
     func handle(method: String, args: [Any], from page: WebPage, reply: @escaping (String) -> Void) {
         let argsJSON = JSON.string(args)
         switch method {
-        case "getLive", "getDashboard", "getWrapped":
+        case "getLive", "getDashboard", "getWrapped", "getUpdate":
             reply(core.call(method, argsJSON))
+        case "checkUpdatesNow":
+            guard let feed = JSON.object(core.call("getUpdate"))?["feed"] as? String else {
+                reply("{\"error\":\"no feed\"}")
+                return
+            }
+            checkUpdate(feed: feed, manual: true, reply: reply)
+        case "installUpdate":
+            reply("null")
+            installUpdate()
         case "updateSettings":
             let result = core.call(method, argsJSON)
             reloadSettings()

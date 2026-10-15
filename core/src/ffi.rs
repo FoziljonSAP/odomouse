@@ -211,5 +211,6 @@ pub unsafe extern "C" fn mk_save(h: *const MkHandle) -> bool {
 
 #[no_mangle]
 pub extern "C" fn mk_version() -> *const c_char {
-    concat!(env!("CARGO_PKG_VERSION"), "\0").as_ptr() as *const c_char
+    static V: std::sync::OnceLock<std::ffi::CString> = std::sync::OnceLock::new();
+    V.get_or_init(|| std::ffi::CString::new(crate::update::version()).unwrap_or_default()).as_ptr()
 }

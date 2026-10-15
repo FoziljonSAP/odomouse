@@ -39,6 +39,8 @@ const SHOTS = {
   'win-dash-stats': { file: 'dashboard.html', w: 1040, h: 760, theme: 'light', full: true, platform: 'windows' },
   'win-dash-settings': { file: 'dashboard.html', query: 'tab=settings', w: 1040, h: 760, theme: 'light', full: true, platform: 'windows' },
   'mac-native-settings': { file: 'dashboard.html', query: 'tab=settings', w: 1040, h: 760, theme: 'dark', full: true, platform: 'mac' },
+  'win-update-stats': { file: 'dashboard.html', w: 1040, h: 760, theme: 'light', platform: 'windows', lang: 'uz', update: true },
+  'win-update-settings': { file: 'dashboard.html', query: 'tab=settings', w: 1040, h: 760, theme: 'light', full: true, platform: 'windows', lang: 'uz', update: true },
   'linux-popup': { file: 'popup.html', w: 360, h: 640, theme: 'dark', platform: 'linux' },
   // for the website (site/img): one viewport, not the whole page
   'site-dash-uz': { file: 'dashboard.html', w: 1100, h: 760, theme: 'light', platform: 'mac', lang: 'uz' },
@@ -75,7 +77,7 @@ async function shoot(browser, name, outDir) {
   page.on('pageerror', (e) => errors.push(String(e)));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   if (s.platform) await page.addInitScript(`window.ODOMOUSE_PLATFORM = ${JSON.stringify(s.platform)}; document.addEventListener('DOMContentLoaded', () => document.documentElement.classList.add('native-chrome'));`);
-  const fake = { scenario: s.scenario || 'normal', native: !!s.platform, lang: s.lang, clock: s.clock, sysLang: s.sysLang, chosen: s.chosen };
+  const fake = { scenario: s.scenario || 'normal', native: !!s.platform, lang: s.lang, clock: s.clock, sysLang: s.sysLang, chosen: s.chosen, update: s.update };
   await page.addInitScript(`window.__FAKE = ${JSON.stringify(fake)};\n${FAKE}`);
   await page.addInitScript(`document.addEventListener('DOMContentLoaded', () => document.documentElement.setAttribute('data-theme', ${JSON.stringify(s.theme)}));`);
   const url = 'file://' + path.join(UI, s.file) + (s.query ? `?${s.query}` : '');

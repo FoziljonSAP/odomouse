@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")"
 cargo build --release
 arch="$(uname -m)"
-version="$(sed -n 's/^version *= *"\(.*\)"/\1/p' Cargo.toml | head -n1)"
+version="$(tr -d ' \n\r' < ../VERSION)"   # one version for every OS
 rm -rf dist && mkdir -p dist
 
 # ---- shared payload: the program and the web UI it serves

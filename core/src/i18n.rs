@@ -155,6 +155,22 @@ const STRINGS: &[(&str, &str, &str, &str)] = &[
         "Today's count sits on the taskbar next to the clock. You can drag it anywhere with the mouse.",
         "Счёт за сегодня виден на панели задач рядом с часами. Его можно перетащить мышью в любое место.",
     ),
+    ("updateTitle", "Odomouse {v} chiqdi", "Odomouse {v} is out", "Вышла Odomouse {v}"),
+    ("updateBody", "Yangilash uchun bosing.", "Click to update.", "Нажмите, чтобы обновить."),
+    (
+        "updateBodyMenu",
+        "Yangilash uchun Odomouse menyusini oching.",
+        "Open the Odomouse menu to update.",
+        "Откройте меню Odomouse, чтобы обновить.",
+    ),
+    ("updateMenu", "Yangilash: {v}", "Update to {v}", "Обновить до {v}"),
+    ("updateDownloading", "Yangi versiya yuklanmoqda…", "Downloading the new version…", "Загружается новая версия…"),
+    (
+        "updateFailed",
+        "Yangilanishni yuklab bo'lmadi. Sayt ochiladi, u yerdan yuklab oling.",
+        "The update could not be downloaded. The website will open so you can get it there.",
+        "Не удалось загрузить обновление. Откроется сайт, скачайте его оттуда.",
+    ),
     ("counterReset", "Hisoblagichni joyiga qaytarish", "Put the counter back by the clock", "Вернуть счётчик к часам"),
     ("resetTitle", "Barcha statistika o'chirilsinmi?", "Delete all statistics?", "Удалить всю статистику?"),
     (

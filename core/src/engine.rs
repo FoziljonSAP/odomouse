@@ -14,6 +14,7 @@ use crate::store::{HistoryStore, Settings, SettingsStore};
 use crate::time::{add_days, date_range, Moment};
 use crate::tracker::Tracker;
 use crate::units::{format_count, format_distance, format_minutes_in, to_fixed};
+use crate::update::{self, Update};
 use std::path::Path;
 
 /// history.json is written at most this often (only if something changed).
@@ -30,6 +31,9 @@ pub struct Engine {
     system_lang: Lang,
     coach: BreakCoach,
     last_save_ms: i64,
+    started_ms: i64,
+    /// A newer version found by the last check (this session only).
+    update: Option<Update>,
 }
 
 fn range_back(range: &str) -> Option<Option<i64>> {
@@ -95,6 +99,8 @@ impl Engine {
             system_lang: Lang::Uz,
             coach: BreakCoach::new(),
             last_save_ms: now.ms,
+            started_ms: now.ms,
+            update: None,
         };
         let today = e.tracker.day.clone();
         e.history.put_day(&today);
@@ -161,7 +167,61 @@ impl Engine {
 
     /// Settings as the pages get them, plus the resolved language.
     pub fn settings_json(&self) -> Json {
-        self.settings.data.to_json().set("lang", self.lang().code()).set("systemLang", self.system_lang.code())
+        self.settings
+            .data
+            .to_json()
+            .set("lang", self.lang().code())
+            .set("systemLang", self.system_lang.code())
+            .set("appVersion", update::version())
+            .set("update", self.update.as_ref().map(Update::to_json).unwrap_or(Json::Null))
+    }
+
+    /// Is a daily new-version check due? If so, note the attempt (a shell that
+    /// never answers gets asked again in an hour) and return the feed address.
+    pub fn update_check_due(&mut self, t: Moment) -> Option<&'static str> {
+        let s = &self.settings.data;
+        if !s.check_updates || t.ms - self.started_ms < update::FIRST_CHECK_AFTER_MS {
+            return None;
+        }
+        let last = s.update_checked_at;
+        // a clock set back would otherwise stop the checks for good
+        if last != 0 && last <= t.ms && t.ms - last < update::DAY_MS {
+            return None;
+        }
+        let retry_at = t.ms - update::DAY_MS + update::RETRY_MS;
+        let _ = self.settings.update(&Json::obj().set("updateCheckedAt", retry_at as f64));
+        Some(update::FEED_URL)
+    }
+
+    /// The text of latest.json, downloaded by the shell. `manual`: the user
+    /// pressed "Check now" (the page shows the result; no notification).
+    /// Returns {current, update, notify} or {error}.
+    pub fn update_feed(&mut self, body: &str, manual: bool, t: Moment) -> Json {
+        let found = match update::parse_feed(body, update::FEED_URL, update::platform(), update::version()) {
+            Ok(u) => u,
+            Err(e) => return Json::obj().set("error", e),
+        };
+        let mut patch = Json::obj().set("updateCheckedAt", t.ms as f64);
+        let mut notify = Json::Null;
+        if let Some(u) = &found {
+            if u.version != self.settings.data.update_notified {
+                patch.insert("updateNotified", u.version.as_str());
+                if !manual {
+                    let l = self.lang();
+                    let body_key = if update::platform() == "linux" { "updateBodyMenu" } else { "updateBody" };
+                    notify = Json::obj()
+                        .set("title", i18n::tr(l, "updateTitle").replace("{v}", &u.version))
+                        .set("body", i18n::tr(l, body_key))
+                        .set("kind", "update");
+                }
+            }
+        }
+        let _ = self.settings.update(&patch);
+        self.update = found;
+        Json::obj()
+            .set("current", update::version())
+            .set("update", self.update.as_ref().map(Update::to_json).unwrap_or(Json::Null))
+            .set("notify", notify)
     }
 
     pub fn hooks_running(&self) -> bool {
@@ -219,7 +279,8 @@ impl Engine {
         } else {
             Json::Null
         };
-        Json::obj().set("tray", self.tray_text()).set("notify", notify)
+        let check = self.update_check_due(t).map(Json::from).unwrap_or(Json::Null);
+        Json::obj().set("tray", self.tray_text()).set("notify", notify).set("checkUpdate", check)
     }
 
     /// Text next to the menu bar / tray icon ("" = icon only).
@@ -549,6 +610,15 @@ impl Engine {
             "getReferences" => Engine::references(self.lang()),
             "getSettings" => self.settings_json(),
             "getDisplays" => self.public_displays(),
+            "getUpdate" => Json::obj()
+                .set("current", update::version())
+                .set("feed", update::FEED_URL)
+                .set("update", self.update.as_ref().map(Update::to_json).unwrap_or(Json::Null)),
+            // args: [latest.json text, manual?]
+            "updateFeed" => {
+                let manual = args.as_arr().and_then(|a| a.get(1)).and_then(Json::as_bool).unwrap_or(false);
+                self.update_feed(arg_str, manual, t)
+            }
             _ => Json::obj().set("error", format!("unknown method: {}", method)),
         }
     }
@@ -777,5 +847,46 @@ mod tests {
         // a second start does not copy again over newer data
         std::fs::write(old.join("settings.json"), r#"{"unit":"mi"}"#).unwrap();
         assert_eq!(Engine::open(&new, t).settings.data.unit, "km");
+    }
+
+    #[test]
+    fn a_new_version_is_found_once_a_day_and_announced_once() {
+        let dir = temp_dir("engine-update");
+        let t0 = at("2026-10-05", 9, 0, 0);
+        let mut e = engine(&dir, t0);
+        e.call("setSystemLanguage", &parse(r#"["en-US"]"#).unwrap(), t0);
+        let later = |m: &Moment, ms: i64| Moment { ms: m.ms + ms, tz_offset_s: m.tz_offset_s };
+        // not right at launch
+        assert_eq!(e.tick(t0, None).get("checkUpdate"), Some(&Json::Null));
+        let t1 = later(&t0, 61_000);
+        assert_eq!(e.tick(t1, None).get("checkUpdate").and_then(Json::as_str), Some(update::FEED_URL));
+        // asked once; no answer -> again in an hour, not every second
+        assert_eq!(e.tick(later(&t1, 1000), None).get("checkUpdate"), Some(&Json::Null));
+        let t2 = later(&t1, update::RETRY_MS + 1000);
+        assert!(e.tick(t2, None).get("checkUpdate").and_then(Json::as_str).is_some());
+
+        let feed = r#"{"version":"99.0.0","files":{"windows":{"url":"Odomouse-Setup.exe"},"mac":{"url":"Odomouse.dmg"},"linux":{"url":"odomouse_amd64.deb"}}}"#;
+        let args = Json::Arr(vec![Json::from(feed)]);
+        let r = e.call("updateFeed", &args, t2);
+        assert_eq!(r.get("current").and_then(Json::as_str), Some(update::version()));
+        assert_eq!(r.get("update").and_then(|u| u.get("version")).and_then(Json::as_str), Some("99.0.0"));
+        assert!(r.get("update").and_then(|u| u.get("url")).and_then(Json::as_str).unwrap().starts_with("https://"));
+        let title = r.get("notify").and_then(|n| n.get("title")).and_then(Json::as_str);
+        assert_eq!(title, Some("Odomouse 99.0.0 is out"));
+        assert_eq!(e.settings_json().get("update").and_then(|u| u.get("version")).and_then(Json::as_str), Some("99.0.0"));
+        // the same version is not announced again, even after a restart
+        let mut e2 = Engine::open(&dir, t2);
+        assert_eq!(e2.call("updateFeed", &args, t2).get("notify"), Some(&Json::Null));
+        // a day later the next check is due
+        let t3 = later(&t2, update::DAY_MS - 1000);
+        assert_eq!(e2.update_check_due(t3), None);
+        assert!(e2.update_check_due(later(&t2, update::DAY_MS + 1000)).is_some());
+        // switched off: no checks
+        e2.call("updateSettings", &parse(r#"[{"checkUpdates":false}]"#).unwrap(), t3);
+        assert_eq!(e2.update_check_due(later(&t2, 3 * update::DAY_MS)), None);
+        // same version as this build: nothing to offer
+        let same = format!(r#"{{"version":"{}"}}"#, update::version());
+        assert_eq!(e2.call("updateFeed", &Json::Arr(vec![Json::from(same.as_str())]), t3).get("update"), Some(&Json::Null));
+        assert!(e2.call("updateFeed", &Json::Arr(vec![Json::from("<html>")]), t3).get("error").is_some());
     }
 }

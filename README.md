@@ -2,11 +2,12 @@
 
 **How far does your cursor travel?** Odomouse is a small odometer for your mouse. It counts the distance the cursor travels, keystrokes, clicks, scrolling, active time and typing speed, and shows them in the menu bar or system tray and in a statistics window.
 
-Website and downloads: **[odomouse.com](https://odomouse.com)**
+Website and downloads: **[foziljonsap.github.io/odomouse](https://foziljonsap.github.io/odomouse/)**
 
 - Native apps for **macOS**, **Windows** and **Linux**, idling at a few MB of memory.
 - In **English, Russian and Uzbek**, light and dark, 24-hour or 12-hour clock.
-- **Private by design**: it counts *which* key was pressed, never what you type. No account, no ads, no network: everything stays in one file on your computer.
+- **Private by design**: it counts *which* key was pressed, never what you type. No account, no ads: everything stays in one file on your computer.
+- **Updates itself**: once a day it checks the website for a new version and offers it in a notification (Settings can turn this off).
 - Free software under the **GPL-3.0** licence.
 
 | | Download | First open |
@@ -35,7 +36,7 @@ windows/   C# WinForms tray app (.NET Framework 4.8) with WebView2, Inno Setup i
 linux/     Rust tray app (StatusNotifierItem over D-Bus); statistics open in the browser
 src/ui/    the statistics window, popup and Wrapped card: one web UI for all three apps
 src/core/  small JS helpers the web UI uses (units, keyboard layout, shortcuts, comparisons)
-site/      odomouse.com
+site/      the website (GitHub Pages)
 test/      JS tests and the screenshot harness (test/ui/shoot.js, needs Playwright)
 ```
 
@@ -66,7 +67,7 @@ GitHub Actions (`.github/workflows/build.yml`) builds all three installers on ev
 
 ## Privacy
 
-Odomouse stores per-key counts, never the order of keys, text, passwords, window titles or screenshots. Per-app statistics are off by default; when on, only the name of the app in front is read. Nothing is sent over the network. Data lives in:
+Odomouse stores per-key counts, never the order of keys, text, passwords, window titles or screenshots. Per-app statistics are off by default; when on, only the name of the app in front is read. Nothing you do is sent over the network. The only request the app makes is a daily download of the public file `download/latest.json` from the website, to see whether a new version is out; it can be switched off in Settings. A new installer is only run after its SHA-256 matches that file. Data lives in:
 
 - macOS: `~/Library/Application Support/Odomouse/`
 - Windows: `%APPDATA%\Odomouse\`
@@ -82,8 +83,8 @@ Copyright (C) 2026 the Odomouse authors. Odomouse is free software: you can redi
 
 ### O'zbekcha
 
-Odomouse sichqoncha kursori bosib o'tgan masofani, klaviatura bosishlarini, kliklarni, faol vaqtni va yozish tezligini sanaydi. macOS, Windows va Linux uchun bepul, ochiq kodli ilova. Yozganingiz saqlanmaydi, ma'lumot kompyuteringizdan chiqmaydi. Yuklab olish: [odomouse.com](https://odomouse.com).
+Odomouse sichqoncha kursori bosib o'tgan masofani, klaviatura bosishlarini, kliklarni, faol vaqtni va yozish tezligini sanaydi. macOS, Windows va Linux uchun bepul, ochiq kodli ilova. Yozganingiz saqlanmaydi, ma'lumot kompyuteringizdan chiqmaydi. Yuklab olish: [foziljonsap.github.io/odomouse](https://foziljonsap.github.io/odomouse/).
 
 ### Русский
 
-Odomouse считает путь курсора мыши, нажатия клавиш, клики, активное время и скорость набора. Бесплатное приложение с открытым кодом для macOS, Windows и Linux. Набранный текст не сохраняется, данные не покидают компьютер. Скачать: [odomouse.com](https://odomouse.com).
+Odomouse считает путь курсора мыши, нажатия клавиш, клики, активное время и скорость набора. Бесплатное приложение с открытым кодом для macOS, Windows и Linux. Набранный текст не сохраняется, данные не покидают компьютер. Скачать: [foziljonsap.github.io/odomouse](https://foziljonsap.github.io/odomouse/).

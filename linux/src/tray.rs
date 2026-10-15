@@ -16,14 +16,16 @@ const WATCHER: &str = "org.kde.StatusNotifierWatcher";
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Action {
     Open(&'static str),
+    Update,
     Quit,
 }
 
 pub struct Tray {
     label: Mutex<String>,
     actions: Mutex<Sender<Action>>,
-    /// Menu texts in the current language, by item id (3 is the separator).
-    menu: Mutex<[String; 5]>,
+    /// Menu texts in the current language, by item id (3 and 6 are
+    /// separators; 5 is "Update to …", hidden while empty).
+    menu: Mutex<[String; 6]>,
     revision: Mutex<u32>,
 }
 
@@ -34,12 +36,12 @@ const ICONS: [(i32, &[u8]); 4] = [
     (64, include_bytes!("../assets/icon-64.argb")),
 ];
 
-// item ids; 3 is a separator
-const MENU: [i32; 4] = [1, 2, 3, 4];
+// item ids in menu order; 3 and 6 are separators, 5 + 6 only with an update
+const MENU: [i32; 6] = [5, 6, 1, 2, 3, 4];
 
 impl Tray {
     pub fn new(actions: Sender<Action>) -> Tray {
-        let menu = [String::new(), "Statistika".into(), "Sozlamalar".into(), String::new(), "Odomouse'dan chiqish".into()];
+        let menu = [String::new(), "Statistika".into(), "Sozlamalar".into(), String::new(), "Odomouse'dan chiqish".into(), String::new()];
         Tray { label: Mutex::new(String::new()), actions: Mutex::new(actions), menu: Mutex::new(menu), revision: Mutex::new(1) }
     }
 
@@ -104,9 +106,14 @@ impl Tray {
         match id {
             0 => V::dict(vec![("children-display", V::s("submenu"))]),
             3 => V::dict(vec![("type", V::s("separator"))]),
-            1 | 2 | 4 => {
+            6 => {
+                let shown = !self.menu.lock().unwrap()[5].is_empty();
+                V::dict(vec![("type", V::s("separator")), ("visible", V::B(shown))])
+            }
+            1 | 2 | 4 | 5 => {
                 let label = self.menu.lock().unwrap()[id as usize].clone();
-                V::dict(vec![("label", V::S(label)), ("enabled", V::B(true)), ("visible", V::B(true))])
+                let shown = !label.is_empty();
+                V::dict(vec![("label", V::S(label)), ("enabled", V::B(true)), ("visible", V::B(shown))])
             }
             _ => V::dict(vec![]),
         }
@@ -120,16 +127,17 @@ impl Tray {
         V::Struct(vec![V::I(0), self.menu_item_props(0), V::Arr("v".into(), children)])
     }
 
-    /// Menu texts for a new language: [stats, settings, quit].
-    pub fn set_menu_texts(&self, bus: &Bus, texts: [&str; 3]) {
+    /// Menu texts: [stats, settings, quit, update ("" = no update)].
+    pub fn set_menu_texts(&self, bus: &Bus, texts: [&str; 4]) {
         {
             let mut m = self.menu.lock().unwrap();
-            if m[1] == texts[0] && m[2] == texts[1] && m[4] == texts[2] {
+            if m[1] == texts[0] && m[2] == texts[1] && m[4] == texts[2] && m[5] == texts[3] {
                 return;
             }
             m[1] = texts[0].to_string();
             m[2] = texts[1].to_string();
             m[4] = texts[2].to_string();
+            m[5] = texts[3].to_string();
         }
         let rev = {
             let mut r = self.revision.lock().unwrap();
@@ -248,6 +256,7 @@ impl Handler for Tray {
                         1 => self.act(Action::Open("stats")),
                         2 => self.act(Action::Open("settings")),
                         4 => self.act(Action::Quit),
+                        5 => self.act(Action::Update),
                         _ => {}
                     }
                 }

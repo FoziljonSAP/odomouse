@@ -63,6 +63,10 @@ for arch in $archs; do bins="$bins $build/$arch/Odomouse"; done
 # shellcheck disable=SC2086
 lipo -create $bins -output "$app/Contents/MacOS/Odomouse"
 cp Odomouse/Info.plist "$app/Contents/Info.plist"
+# one version for every OS: VERSION at the repository root
+version="$(tr -d ' \n\r' < "$root/VERSION")"
+plutil -replace CFBundleShortVersionString -string "$version" "$app/Contents/Info.plist"
+plutil -replace CFBundleVersion -string "$version" "$app/Contents/Info.plist"
 cp Resources/AppIcon.icns Resources/TrayIcon.png Resources/TrayIcon@2x.png "$app/Contents/Resources/"
 cp -R "$root/src/ui" "$root/src/assets" "$app/Contents/Resources/"
 cp "$root/src/core/units.js" "$root/src/core/keyboard.js" "$root/src/core/shortcuts.js" "$root/src/core/fun.js" "$app/Contents/Resources/core/"

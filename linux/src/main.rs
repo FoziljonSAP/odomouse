@@ -9,6 +9,7 @@ mod dl;
 mod evdev;
 mod server;
 mod tray;
+mod update;
 mod x11;
 
 use odomouse_core::engine::Engine;
@@ -92,7 +93,7 @@ impl App {
     }
 
     fn settings(&self) -> Json {
-        self.with(|e, _| e.settings().to_json())
+        self.with(|e, _| e.settings_json())
     }
 
     fn after_settings_change(&self) {
@@ -105,11 +106,66 @@ impl App {
     }
 
     fn refresh_label(&self) {
-        let (text, lang) = self.with(|e, _| (e.tray_text(), e.lang()));
+        let (text, lang, version) = self.with(|e, t| {
+            let u = e.call("getUpdate", &Json::Null, t);
+            let v = u.get("update").and_then(|u| u.get("version")).and_then(Json::as_str).map(str::to_string);
+            (e.tray_text(), e.lang(), v)
+        });
         if let (Some(bus), Some(tray)) = (self.bus.get(), self.tray.get()) {
             tray.set_label(bus, &text);
             let tr = |k| odomouse_core::i18n::tr(lang, k);
-            tray.set_menu_texts(bus, [tr("stats"), tr("settings"), tr("quit")]);
+            let upd = version.map(|v| tr("updateMenu").replace("{v}", &v)).unwrap_or_default();
+            tray.set_menu_texts(bus, [tr("stats"), tr("settings"), tr("quit"), &upd]);
+        }
+    }
+
+    fn notify(&self, title: &str, body: &str) {
+        if let Some(bus) = self.bus.get() {
+            dbus::notify(bus, title, body);
+        }
+    }
+
+    /// Download latest.json and let the core decide (blocks: call off the
+    /// main loop). `manual`: "Check now" in Settings, which shows the result.
+    fn check_update(&self, manual: bool) -> String {
+        let feed = self.with(|e, t| e.call("getUpdate", &Json::Null, t));
+        let feed = feed.get("feed").and_then(Json::as_str).unwrap_or("").to_string();
+        let body = match update::fetch_text(&feed, &runtime_dir().join("odomouse")) {
+            Ok(b) => b,
+            Err(e) => return Json::obj().set("error", e).to_string(),
+        };
+        let out = self.with(|e, t| e.call("updateFeed", &Json::Arr(vec![Json::from(body), Json::Bool(manual)]), t));
+        if out.get("error").is_none() {
+            if let Some(n) = out.get("notify").filter(|n| **n != Json::Null) {
+                self.notify(n.get("title").and_then(Json::as_str).unwrap_or(""), n.get("body").and_then(Json::as_str).unwrap_or(""));
+            }
+            self.after_settings_change(); // menu item, and the pages show the version
+        }
+        out.to_string()
+    }
+
+    /// Download the new .deb into Downloads, check it and open it in the
+    /// system's package installer. Anything unexpected: the website.
+    fn install_update(&self) {
+        let (u, lang) = self.with(|e, t| (e.call("getUpdate", &Json::Null, t), e.lang()));
+        let Some(u) = u.get("update").filter(|u| **u != Json::Null).cloned() else { return };
+        let get = |k: &str| u.get(k).and_then(Json::as_str).unwrap_or("").to_string();
+        let (url, sha, version, page) = (get("url"), get("sha256"), get("version"), get("page"));
+        let tr = |k| odomouse_core::i18n::tr(lang, k);
+        if !url.ends_with(".deb") || sha.len() != 64 {
+            let _ = Command::new("xdg-open").arg(if url.is_empty() { &page } else { &url }).spawn();
+            return;
+        }
+        self.notify(&format!("Odomouse {}", version), tr("updateDownloading"));
+        match update::download_package(&url, &sha, &version, &user_dir("DOWNLOAD")) {
+            Ok(deb) => {
+                let _ = Command::new("xdg-open").arg(&deb).stdout(Stdio::null()).stderr(Stdio::null()).spawn();
+            }
+            Err(e) => {
+                eprintln!("Odomouse: update: {}", e);
+                self.notify("Odomouse", tr("updateFailed"));
+                let _ = Command::new("xdg-open").arg(&page).stdout(Stdio::null()).stderr(Stdio::null()).spawn();
+            }
         }
     }
 
@@ -120,7 +176,12 @@ impl App {
         let args = req.get("args").cloned().unwrap_or(Json::Arr(vec![]));
         let first = args.as_arr().and_then(|a| a.first()).and_then(Json::as_str).unwrap_or("").to_string();
         match method.as_str() {
-            "getLive" | "getDashboard" | "getWrapped" | "resetData" | "clearApps" => {
+            "checkUpdatesNow" => self.check_update(true),
+            "installUpdate" => {
+                self.act(Action::Update);
+                "null".into()
+            }
+            "getLive" | "getDashboard" | "getWrapped" | "getUpdate" | "resetData" | "clearApps" => {
                 let out = self.with(|e, t| e.call(&method, &args, t)).to_string();
                 if method == "resetData" {
                     self.refresh_label();
@@ -591,6 +652,12 @@ fn main() {
                         dbus::notify(bus, note.get("title").and_then(Json::as_str).unwrap_or(""), note.get("body").and_then(Json::as_str).unwrap_or(""));
                     }
                 }
+                if out.get("checkUpdate").and_then(Json::as_str).is_some() {
+                    let a = ticker.clone();
+                    let _ = std::thread::Builder::new().name("update".into()).spawn(move || {
+                        a.check_update(false);
+                    });
+                }
                 if n % 15 == 0 {
                     if let Some(s) = ticker.server.get() {
                         s.keepalive();
@@ -621,6 +688,10 @@ fn main() {
                 } else {
                     open_in_browser(&srv.url("dashboard.html", &format!("tab={}", tab)), false);
                 }
+            }
+            Action::Update => {
+                let a = app.clone();
+                let _ = std::thread::Builder::new().name("update".into()).spawn(move || a.install_update());
             }
             Action::Quit => break,
         }

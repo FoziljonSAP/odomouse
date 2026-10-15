@@ -8,6 +8,8 @@ $root = Split-Path -Parent $here
 $core = Join-Path $root 'core'
 $proj = Join-Path $here 'Odomouse'
 $native = Join-Path $proj 'native'
+# one version for every OS: VERSION at the repository root
+$version = (Get-Content (Join-Path $root 'VERSION') -Raw).Trim()
 
 # Link the C runtime statically: odomouse_core.dll then runs on PCs without
 # the Visual C++ Redistributable.
@@ -23,7 +25,7 @@ foreach ($arch in $targets.Keys) {
     Copy-Item (Join-Path $core "target\$t\release\odomouse_core.dll") (Join-Path $native "$arch\odomouse_core.dll") -Force
 }
 
-dotnet build (Join-Path $proj 'Odomouse.csproj') -c Release -o (Join-Path $here 'build\app')
+dotnet build (Join-Path $proj 'Odomouse.csproj') -c Release -o (Join-Path $here 'build\app') "-p:Version=$version"
 if ($LASTEXITCODE -ne 0) { throw 'dotnet build failed' }
 
 $dist = Join-Path $here 'dist'
@@ -41,7 +43,6 @@ if (-not $iscc) {
     Write-Host "Inno Setup 6 topilmadi, o'rnatuvchi yig'ilmadi (https://jrsoftware.org/isdl.php)."
     exit 0
 }
-$version = ([xml](Get-Content (Join-Path $proj 'Odomouse.csproj'))).Project.PropertyGroup.Version | Select-Object -First 1
 & $iscc /Q "/DAppVersion=$version" (Join-Path $here 'installer.iss')
 if ($LASTEXITCODE -ne 0) { throw 'Inno Setup failed' }
 Write-Host "O'rnatuvchi: $(Join-Path $dist 'Odomouse-Setup.exe')"

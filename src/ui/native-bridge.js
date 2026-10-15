@@ -119,6 +119,9 @@
     clearApps: () => call('clearApps'),
     resetData: () => call('resetData'),
     openPermissions: () => call('openPermissions'),
+    getUpdate: () => call('getUpdate'),
+    checkUpdatesNow: () => call('checkUpdatesNow'),
+    installUpdate: () => call('installUpdate'),
     quit: () => call('quit'),
   };
 })();

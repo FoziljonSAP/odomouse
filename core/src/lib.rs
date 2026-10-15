@@ -17,3 +17,4 @@ pub mod store;
 pub mod time;
 pub mod tracker;
 pub mod units;
+pub mod update;

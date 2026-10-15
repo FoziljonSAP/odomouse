@@ -7,6 +7,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
 using Microsoft.Win32;
@@ -43,6 +44,9 @@ namespace Odomouse
         private bool webViewWarned;
         private TaskbarCounter counter;   // today's number on the taskbar, like the macOS menu bar
         private string counterText = "";
+        private Dictionary<string, object> update;   // a newer version, from the core
+        private string balloonKind;                  // what a click on the last balloon does
+        private bool updateBusy;
 
         public static string DataDir => Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Odomouse");
@@ -69,6 +73,9 @@ namespace Odomouse
                 IntPtr.Zero, foregroundProc, 0, 0, Win32.WINEVENT_OUTOFCONTEXT);
 
             var menu = new ContextMenuStrip();
+            updateItem = menu.Items.Add("", null, (s, e) => InstallUpdate());
+            updateItem.Font = new Font(updateItem.Font, FontStyle.Bold);
+            updateItem.Visible = false;
             statsItem = menu.Items.Add("", null, (s, e) => OpenDashboard("stats"));
             settingsItem = menu.Items.Add("", null, (s, e) => OpenDashboard("settings"));
             counterItem = menu.Items.Add("", null, (s, e) => counter?.ResetPlace());
@@ -76,6 +83,8 @@ namespace Odomouse
             quitItem = menu.Items.Add("", null, (s, e) => ExitThread());
             tray = new NotifyIcon { Icon = AppIcon, Text = "Odomouse", ContextMenuStrip = menu, Visible = true };
             tray.MouseClick += (s, e) => { if (e.Button == MouseButtons.Left) TogglePopup(); };
+            tray.BalloonTipClicked += (s, e) => { if (balloonKind == "update") InstallUpdate(); };
+            tray.BalloonTipClosed += (s, e) => balloonKind = null;
             try
             {
                 counter = new TaskbarCounter(AppIcon) { TrayMenu = menu };
@@ -102,7 +111,7 @@ namespace Odomouse
             Tick();
             // Windows 11 puts new tray icons under ^: say where the counter is until the guide is done
             if (!Flag("onboardingDone", false))
-                tray.ShowBalloonTip(10000, S("trayHintTitle"), S("trayHintBody"), ToolTipIcon.Info);
+                ShowNote(S("trayHintTitle"), S("trayHintBody"), null);
             if (!background) OpenDashboard("stats");
         }
 
@@ -123,10 +132,93 @@ namespace Odomouse
             {
                 SetTip(result.TryGetValue("tray", out object t) ? t as string : null);
                 if (result.TryGetValue("notify", out object n) && n is Dictionary<string, object> note)
-                    tray.ShowBalloonTip(15000, note["title"] as string, note["body"] as string, ToolTipIcon.Info);
+                    ShowNote(note);
+                if (result.TryGetValue("checkUpdate", out object feed) && feed is string feedUrl)
+                    _ = CheckUpdate(feedUrl, false, null);
             }
             if (popup != null && popup.Visible) PushLive();
             KeepCounter();
+        }
+
+        private void ShowNote(Dictionary<string, object> note) =>
+            ShowNote(note["title"] as string, note["body"] as string, note.TryGetValue("kind", out object k) ? k as string : null);
+
+        private void ShowNote(string title, string body, string kind)
+        {
+            balloonKind = kind;
+            tray.ShowBalloonTip(15000, title ?? "Odomouse", body ?? "", ToolTipIcon.Info);
+        }
+
+        // ---------------------------------------------------------- updates
+
+        /// <summary>Download latest.json and let the core decide. `reply`: "Check now" in Settings.</summary>
+        private async Task CheckUpdate(string feed, bool manual, Action<string> reply)
+        {
+            string body;
+            try { body = await Updater.FetchText(feed); }
+            catch (Exception e)
+            {
+                reply?.Invoke("{\"error\":" + Json.Serialize(e.Message) + "}");
+                return;
+            }
+            string result = core.Call("updateFeed", Json.Serialize(new object[] { body, manual }));
+            var r = Json.DeserializeObject(result) as Dictionary<string, object>;
+            if (r != null && !r.ContainsKey("error"))
+            {
+                update = r.TryGetValue("update", out object u) ? u as Dictionary<string, object> : null;
+                RefreshUpdateItem();
+                if (r.TryGetValue("notify", out object n) && n is Dictionary<string, object> note) ShowNote(note);
+                ReloadSettings();
+                ApplySettings(); // the pages show the new version
+            }
+            reply?.Invoke(result);
+        }
+
+        private void RefreshUpdateItem()
+        {
+            if (updateItem == null) return;
+            string v = update != null && update.TryGetValue("version", out object o) ? o as string : null;
+            updateItem.Visible = v != null;
+            if (v != null) updateItem.Text = S("updateMenu").Replace("{v}", v);
+        }
+
+        private static void OpenUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url) || !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) return;
+            try { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); } catch (Exception) { }
+        }
+
+        /// <summary>
+        /// Download the new installer, check its SHA-256 and run it quietly: it
+        /// asks this copy to save and quit (--quit), replaces the files and
+        /// starts the new version. Anything unexpected: open the website instead.
+        /// </summary>
+        private async void InstallUpdate()
+        {
+            if (update == null || updateBusy) return;
+            string url = update.TryGetValue("url", out object u) ? u as string : null;
+            string sha = update.TryGetValue("sha256", out object h) ? h as string : null;
+            string ver = update.TryGetValue("version", out object v) ? v as string : null;
+            string page = update.TryGetValue("page", out object p) ? p as string : null;
+            if (url == null || !url.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(sha))
+            {
+                OpenUrl(url ?? page);
+                return;
+            }
+            updateBusy = true;
+            ShowNote("Odomouse " + ver, S("updateDownloading"), null);
+            try
+            {
+                string file = await Updater.DownloadInstaller(url, sha, ver);
+                core.Save();
+                Process.Start(new ProcessStartInfo(file, "/SILENT /SUPPRESSMSGBOXES /NORESTART") { UseShellExecute = true });
+            }
+            catch (Exception)
+            {
+                MessageBox.Show(S("updateFailed"), "Odomouse", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                OpenUrl(page);
+            }
+            finally { updateBusy = false; }
         }
 
         /// <summary>Show the counter unless "Icon only" is chosen; re-place it above the taskbar.</summary>
@@ -229,7 +321,7 @@ namespace Odomouse
 
         // menu and dialog texts in the current language (from the core)
         private Dictionary<string, object> strings = new Dictionary<string, object>();
-        private ToolStripItem statsItem, settingsItem, counterItem, quitItem;
+        private ToolStripItem updateItem, statsItem, settingsItem, counterItem, quitItem;
 
         private string S(string key) => strings.TryGetValue(key, out object v) && v is string str ? str : key;
 
@@ -240,6 +332,7 @@ namespace Odomouse
             statsItem.Text = S("stats");
             settingsItem.Text = S("settings");
             counterItem.Text = S("counterReset");
+            RefreshUpdateItem();
             quitItem.Text = S("quit");
         }
 
@@ -368,7 +461,20 @@ namespace Odomouse
                 case "getLive":
                 case "getDashboard":
                 case "getWrapped":
+                case "getUpdate":
                     reply(core.Call(method, argsJson));
+                    break;
+                case "checkUpdatesNow":
+                    {
+                        var info = Json.DeserializeObject(core.Call("getUpdate")) as Dictionary<string, object>;
+                        string feed = info != null && info.TryGetValue("feed", out object f) ? f as string : null;
+                        if (feed == null) { reply("{\"error\":\"no feed\"}"); break; }
+                        _ = CheckUpdate(feed, true, reply);
+                        break;
+                    }
+                case "installUpdate":
+                    reply("null");
+                    InstallUpdate();
                     break;
                 case "updateSettings":
                     {

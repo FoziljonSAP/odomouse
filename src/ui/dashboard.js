@@ -71,6 +71,11 @@
       notices.append(el('div', { class: 'notice' }, el('p', { text: t('permissionNeeded') }),
         el('button', { class: 'btn', text: t('grant'), onclick: () => api.openPermissions() })));
     }
+    const upd = d.settings && d.settings.update;
+    if (upd && api.installUpdate) {
+      notices.append(el('div', { class: 'notice' }, el('p', { text: t('updateReady', { v: upd.version }) }),
+        el('button', { class: 'btn', text: t('updateNow'), onclick: () => startUpdate() })));
+    }
     if (d.displays.some((x) => x.source === 'estimate')) {
       notices.append(el('div', { class: 'notice quiet' }, el('p', { text: t('distanceApprox') }),
         el('button', { class: 'btn', text: t('adjust'), onclick: () => showTab('settings') })));
@@ -290,6 +295,45 @@
     return grid;
   }
 
+  // "Check now" result; kept here because the page is redrawn when settings change
+  let updateStatus = '';
+
+  function startUpdate() {
+    updateStatus = t(PLATFORM === 'linux' ? 'updateStartedLinux' : 'updateStarted');
+    const st = document.getElementById('update-status');
+    if (st) st.textContent = updateStatus;
+    api.installUpdate();
+  }
+
+  function updatesGroup(s) {
+    const status = el('span', { class: 'inline-status', id: 'update-status', role: 'status', text: updateStatus });
+    const check = el('button', {
+      class: 'btn',
+      text: t('checkNow'),
+      onclick: () => {
+        updateStatus = t('checking');
+        status.textContent = updateStatus;
+        check.disabled = true;
+        api.checkUpdatesNow().then((r) => {
+          updateStatus = r && r.error ? t('updateCheckFailed') : r && r.update ? t('updateReady', { v: r.update.version }) : t('upToDate');
+        }, () => { updateStatus = t('updateCheckFailed'); }).then(() => {
+          status.textContent = updateStatus;
+          check.disabled = false;
+          load();
+        });
+      },
+    });
+    return group(t('updates'),
+      el('p', { class: 'label', text: t('appVersion', { v: s.appVersion || '' }) }),
+      el('label', { class: 'check' },
+        el('input', { type: 'checkbox', checked: s.checkUpdates !== false, onchange: (e) => set({ checkUpdates: e.target.checked }) }), t('checkUpdates')),
+      el('div', { class: 'row-actions', style: 'margin-top:12px' },
+        s.update ? el('button', { class: 'btn', text: t('updateNow') + ' · ' + s.update.version, onclick: () => startUpdate() }) : null,
+        check, status),
+      el('p', { class: 'note', text: t('updatesNote') }));
+  }
+  const set = (partial) => api.updateSettings(partial);
+
   function renderSettings(d) {
     const s = d.settings;
     const host = document.getElementById('settings');
@@ -380,6 +424,8 @@
         el('button', { class: 'btn danger', text: t('deleteAll'), onclick: () => api.resetData().then((r) => { if (r.ok) { dataStatus.textContent = t('deleted'); load(); } }) }),
         dataStatus),
       el('p', { class: 'note', text: t('privacyNote', { device: device() }) })));
+
+    if (NATIVE && api.checkUpdatesNow) wrap.append(updatesGroup(s));
 
     wrap.append(group(t('help'),
       el('div', { class: 'row-actions' },

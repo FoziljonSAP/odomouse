@@ -150,6 +150,12 @@ pub struct Settings {
     pub language_chosen: bool,
     /// Clock style for hours: "auto" (12-hour in English), "24" or "12".
     pub clock: String,
+    /// Look for a new version once a day (a download of a public file).
+    pub check_updates: bool,
+    /// When the last check started (ms since 1970); 0 = never.
+    pub update_checked_at: i64,
+    /// The newest version already announced, so each one is announced once.
+    pub update_notified: String,
 }
 
 const THEMES: [&str; 3] = ["system", "light", "dark"];
@@ -176,6 +182,9 @@ impl Default for Settings {
             language: "auto".into(),
             language_chosen: false,
             clock: "auto".into(),
+            check_updates: true,
+            update_checked_at: 0,
+            update_notified: String::new(),
         }
     }
 }
@@ -203,6 +212,9 @@ impl Settings {
             .set("language", self.language.as_str())
             .set("languageChosen", self.language_chosen)
             .set("clock", self.clock.as_str())
+            .set("checkUpdates", self.check_updates)
+            .set("updateCheckedAt", self.update_checked_at as f64)
+            .set("updateNotified", self.update_notified.as_str())
     }
 
     /// Validate a full settings object; anything invalid falls back to the default.
@@ -238,6 +250,9 @@ impl Settings {
             language: pick(s("language"), s("language") == "auto" || crate::i18n::LANGS.contains(&s("language")), &d.language),
             language_chosen: j.get("languageChosen") == Some(&Json::Bool(true)),
             clock: pick(s("clock"), CLOCKS.contains(&s("clock")), &d.clock),
+            check_updates: j.get("checkUpdates") != Some(&Json::Bool(false)),
+            update_checked_at: j.get("updateCheckedAt").and_then(Json::as_f64).filter(|n| n.is_finite() && *n >= 0.0).unwrap_or(0.0) as i64,
+            update_notified: s("updateNotified").chars().filter(|c| c.is_ascii_alphanumeric() || ".-+".contains(*c)).take(32).collect(),
         }
     }
 

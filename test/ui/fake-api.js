@@ -119,6 +119,7 @@
   let language = F.lang || 'auto';
   let languageChosen = F.chosen !== false;
   let clock = F.clock || 'auto';
+  let checkUpdates = true;
   const sysLang = F.sysLang || 'uz';
   const lang = () => (language === 'auto' ? sysLang : language);
 
@@ -126,6 +127,7 @@
     const s = { unit, theme, compareDistance, compareText, onboardingDone, seenDashboard, trayShows, diagonalOverrides: { ...overrides }, breakReminder, breakMinutes, trackApps };
     // the core sends these; without them the pages stay Uzbek and never ask
     if (F.native || F.lang || F.sysLang || F.chosen === false) Object.assign(s, { language, languageChosen, clock, lang: lang(), systemLang: sysLang });
+    if (F.native) Object.assign(s, { appVersion: '1.1.0', checkUpdates, update: F.update ? { version: '1.2.0', url: 'https://example.org/x', sha256: '', page: 'https://example.org/' } : null });
     return s;
   }
   const L = (uz, en, ru) => ({ uz, en, ru })[lang()];
@@ -214,6 +216,7 @@
       if (p.language) language = p.language;
       if ('languageChosen' in p) languageChosen = p.languageChosen;
       if (p.clock) clock = p.clock;
+      if ('checkUpdates' in p) checkUpdates = p.checkUpdates;
       emit('settings', settings()); emit('live', live());
       return { settings: settings(), displays: displays() };
     },
@@ -229,6 +232,8 @@
     clearApps: async () => ({ ok: true }),
     resetData: async () => ({ ok: false }),
     openPermissions: async () => { window.__perm = true; },
+    checkUpdatesNow: async () => ({ current: '1.1.0', update: F.update ? { version: '1.2.0' } : null }),
+    installUpdate: async () => { window.__installing = true; },
     quit: async () => {},
   };
 })();
