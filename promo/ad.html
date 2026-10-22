@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<title>Odomouse promo</title>
+<!--
+  A 25-second vertical (1080×1920) promo, drawn as one HTML page whose look is
+  a pure function of time: render(t). promo/render.js steps t frame by frame
+  and turns the screenshots into an MP4. Open the page in a browser to watch
+  it live (?lang=uz|en|ru, ?t=12 to freeze at a moment).
+-->
+<style>
+@font-face { font-family: Inter; font-weight: 500; src: url(fonts/inter-latin-500-normal.woff2) format("woff2"); }
+@font-face { font-family: Inter; font-weight: 700; src: url(fonts/inter-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: Inter; font-weight: 800; src: url(fonts/inter-latin-800-normal.woff2) format("woff2"); }
+@font-face { font-family: Inter; font-weight: 500; src: url(fonts/inter-cyrillic-500-normal.woff2) format("woff2"); unicode-range: U+0400-04FF; }
+@font-face { font-family: Inter; font-weight: 700; src: url(fonts/inter-cyrillic-700-normal.woff2) format("woff2"); unicode-range: U+0400-04FF; }
+@font-face { font-family: Inter; font-weight: 800; src: url(fonts/inter-cyrillic-800-normal.woff2) format("woff2"); unicode-range: U+0400-04FF; }
+
+:root { --cream: #f2f1ec; --cream-2: #a9acb3; --road: #82abe6; --red: #c9493f; --wheel: #2a2c32; --night: #121419; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #000; }
+body { display: grid; place-items: center; min-height: 100vh; }
+#film {
+  position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--night);
+  font-family: Inter, system-ui, sans-serif; color: var(--cream); -webkit-font-smoothing: antialiased;
+  font-feature-settings: "tnum" 1, "cv11" 1;
+}
+.fit { transform-origin: top left; }
+.layer { position: absolute; inset: 0; }
+#glow { position: absolute; inset: -20%; }
+#trail { position: absolute; inset: 0; }
+.cursor { position: absolute; width: 64px; left: 0; top: 0; filter: drop-shadow(0 6px 14px rgba(0,0,0,.5)); }
+.cursor path { fill: #fff; stroke: #111; stroke-width: 1.3; stroke-linejoin: round; }
+
+.title { position: absolute; left: 60px; right: 60px; text-align: center; font-weight: 800; font-size: 84px; line-height: 1.08; letter-spacing: -0.035em; white-space: pre-line; }
+.title .w { display: inline-block; white-space: pre; }
+.kicker { position: absolute; left: 0; right: 0; text-align: center; font-weight: 700; font-size: 38px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--road); }
+.sub { position: absolute; left: 80px; right: 80px; text-align: center; font-weight: 500; font-size: 44px; line-height: 1.3; color: var(--cream-2); white-space: pre-line; }
+
+/* odometer */
+.odo { position: absolute; left: 50%; top: 760px; translate: -50% 0; display: flex; align-items: center; gap: 14px; padding: 26px; border-radius: 34px; background: #1b1d23; box-shadow: 0 40px 90px -30px #000, inset 0 0 0 2px #2a2d35; }
+.drum { width: 136px; height: 196px; border-radius: 18px; overflow: hidden; position: relative; background: linear-gradient(#202227, #34363e 50%, #202227); }
+.drum.red { background: linear-gradient(#8e2c26, #d0544a 50%, #8e2c26); }
+.drum .strip { position: absolute; left: 0; right: 0; top: 0; }
+.drum .strip span { display: block; height: 196px; line-height: 196px; text-align: center; font-weight: 700; font-size: 136px; }
+.drum::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,.55), transparent 28%, transparent 72%, rgba(0,0,0,.55)); }
+.dot { width: 18px; height: 18px; border-radius: 50%; background: var(--cream-2); align-self: end; margin-bottom: 30px; }
+.odo .unit { font-weight: 700; font-size: 64px; color: var(--cream-2); margin-left: 10px; }
+.chips { position: absolute; left: 0; right: 0; top: 1150px; display: grid; justify-items: center; gap: 26px; }
+.chip { font-weight: 700; font-size: 50px; padding: 20px 38px; border-radius: 999px; background: rgba(130,171,230,.13); color: #dfe9f7; box-shadow: inset 0 0 0 2px rgba(130,171,230,.35); }
+
+/* keyboard */
+.kb { position: absolute; left: 50%; top: 640px; translate: -50% 0; display: grid; gap: 14px; }
+.kb .row { display: flex; gap: 14px; justify-content: center; }
+.kb .k { width: 82px; height: 82px; border-radius: 16px; display: grid; place-items: center; font-weight: 700; font-size: 34px; background: #24272e; color: #8a8f99; }
+.kb .k.space { width: 460px; }
+.stats { position: absolute; left: 0; right: 0; top: 1130px; display: flex; justify-content: center; gap: 80px; }
+.stat { text-align: center; }
+.stat b { display: block; font-weight: 800; font-size: 128px; letter-spacing: -0.03em; line-height: 1; }
+.stat span { font-weight: 500; font-size: 40px; color: var(--cream-2); }
+.lock { position: absolute; left: 0; right: 0; top: 1420px; text-align: center; font-weight: 500; font-size: 40px; color: var(--cream-2); }
+.lock i { font-style: normal; display: inline-grid; place-items: center; width: 54px; height: 54px; border-radius: 50%; background: rgba(130,171,230,.16); color: var(--road); margin-right: 14px; vertical-align: -12px; }
+
+/* product shots */
+.shot { position: absolute; border-radius: 26px; overflow: hidden; box-shadow: 0 60px 120px -40px #000, 0 0 0 2px rgba(255,255,255,.08); background: #fff; }
+.shot img { display: block; width: 100%; height: auto; }
+#dash { left: 50px; width: 980px; top: 690px; transform-origin: 50% 0; }
+#pop { width: 360px; right: 60px; top: 1060px; border-radius: 34px; }
+#card { left: 50%; width: 660px; top: 640px; margin-left: -330px; border-radius: 36px; }
+
+/* trust */
+.badges { position: absolute; left: 0; right: 0; top: 700px; display: grid; justify-items: center; gap: 34px; }
+.badge { display: flex; align-items: center; gap: 26px; font-weight: 800; font-size: 84px; letter-spacing: -0.02em; }
+.badge i { font-style: normal; width: 96px; height: 96px; border-radius: 50%; display: grid; place-items: center; background: var(--red); font-size: 54px; }
+.os { position: absolute; left: 0; right: 0; top: 1330px; text-align: center; font-weight: 700; font-size: 52px; color: var(--cream-2); letter-spacing: 0.02em; }
+
+/* end */
+.logo { position: absolute; left: 50%; top: 560px; width: 380px; height: 380px; margin-left: -190px; }
+.logo img { width: 100%; height: 100%; }
+.logo svg { position: absolute; inset: -60px; width: calc(100% + 120px); height: calc(100% + 120px); }
+.word { position: absolute; left: 0; right: 0; top: 1050px; text-align: center; font-weight: 800; font-size: 150px; letter-spacing: -0.045em; }
+.tag { position: absolute; left: 0; right: 0; top: 1230px; text-align: center; font-weight: 500; font-size: 48px; color: var(--cream-2); }
+.cta { position: absolute; left: 50%; top: 1400px; translate: -50% 0; display: grid; justify-items: center; gap: 22px; }
+.cta b { font-weight: 800; font-size: 58px; padding: 30px 64px; border-radius: 999px; background: var(--cream); color: #16181d; white-space: nowrap; }
+.cta span { font-weight: 700; font-size: 44px; color: var(--road); white-space: nowrap; }
+.road { position: absolute; left: 0; right: 0; bottom: 120px; height: 10px; background: repeating-linear-gradient(90deg, var(--road) 0 60px, transparent 60px 100px); opacity: .55; }
+</style>
+</head>
+<body>
+<div id="film">
+  <canvas id="glow" width="270" height="480"></canvas>
+  <canvas id="trail" width="1080" height="1920"></canvas>
+
+  <!-- 1–2: the question and today's distance -->
+  <div class="layer" id="s1">
+    <div class="title" id="q" style="top:300px"></div>
+  </div>
+  <div class="layer" id="s2">
+    <div class="kicker" id="today" style="top:680px"></div>
+    <div class="odo" id="odo"></div>
+    <div class="chips" id="chips"></div>
+  </div>
+  <!-- 3: keys -->
+  <div class="layer" id="s3">
+    <div class="title" id="kbTitle" style="top:330px"></div>
+    <div class="kb" id="kb"></div>
+    <div class="stats"><div class="stat"><b id="nKeys">0</b><span id="lKeys"></span></div><div class="stat"><b id="nWpm">0</b><span id="lWpm"></span></div></div>
+    <div class="lock"><i>✓</i><span id="kbPrivacy"></span></div>
+  </div>
+  <!-- 4: the app -->
+  <div class="layer" id="s4">
+    <div class="title" id="appTitle" style="top:300px"></div>
+    <div class="shot" id="dash"><img id="imgDash" alt=""></div>
+    <div class="shot" id="pop"><img id="imgPop" alt=""></div>
+  </div>
+  <!-- 5: the weekly card -->
+  <div class="layer" id="s5">
+    <div class="title" id="cardTitle" style="top:300px"></div>
+    <div class="shot" id="card"><img id="imgCard" alt=""></div>
+    <div class="sub" id="cardSub" style="top:1540px"></div>
+  </div>
+  <!-- 6: trust -->
+  <div class="layer" id="s6">
+    <div class="badges" id="badges"></div>
+    <div class="os" id="os"></div>
+  </div>
+  <!-- 7: the end -->
+  <div class="layer" id="s7">
+    <div class="logo" id="logo"><svg viewBox="0 0 100 100"><circle id="ring" cx="50" cy="50" r="46" fill="none" stroke="#82abe6" stroke-width="2.2" stroke-dasharray="6 4" stroke-linecap="round"/></svg><img src="../site/img/icon-256.png" alt=""></div>
+    <div class="word" id="word">Odomouse</div>
+    <div class="tag" id="tag"></div>
+    <div class="cta" id="cta"><b id="ctaB"></b><span>foziljonsap.github.io/odomouse</span></div>
+    <div class="road" id="road"></div>
+  </div>
+  <svg class="cursor" id="cursor" viewBox="0 0 20 28"><path d="M2 2v21l5.5-5.2 3.6 8.2 3.6-1.6-3.6-8h7.6z"/></svg>
+</div>
+
+<script>
+'use strict';
+const TX = {
+  uz: { q: "Sichqonchangiz bugun\nqancha yo'l bosdi?", today: 'Bugun', chips: ['≈ 12 futbol maydoni', '≈ 4 Eyfel minorasi', '≈ 7 137 ta banan'],
+    kbTitle: 'Har bir tugma\nsanaladi', keys: 'tugma', wpm: "so'z/daqiqa", kbPrivacy: 'Faqat soni. Nima yozganingiz saqlanmaydi.',
+    appTitle: 'Butun kuningiz\nbitta oynada', cardTitle: 'Haftangiz —\nbitta kartada', cardSub: "Do'stlaringizga yuboring",
+    badges: ['Bepul', 'Reklamasiz', 'Ochiq kod'], tag: 'Sichqonchangiz uchun odometr', cta: 'Bepul yuklab oling', sep: ' ' },
+  en: { q: 'How far did your mouse\ntravel today?', today: 'Today', chips: ['≈ 12 football pitches', '≈ 4 Eiffel Towers', '≈ 7,137 bananas'],
+    kbTitle: 'Every key\ncounts', keys: 'keys', wpm: 'words/min', kbPrivacy: 'Only the count. Never what you type.',
+    appTitle: 'Your whole day\nin one window', cardTitle: 'Your week\non one card', cardSub: 'Share it with friends',
+    badges: ['Free', 'No ads', 'Open source'], tag: 'An odometer for your mouse', cta: 'Download free', sep: ',' },
+  ru: { q: 'Сколько ваша мышь\nпрошла сегодня?', today: 'Сегодня', chips: ['≈ 12 футбольных полей', '≈ 4 Эйфелевы башни', '≈ 7 137 бананов'],
+    kbTitle: 'Каждая клавиша\nна счету', keys: 'клавиш', wpm: 'слов/мин', kbPrivacy: 'Только количество. Текст не сохраняется.',
+    appTitle: 'Весь ваш день\nв одном окне', cardTitle: 'Ваша неделя —\nна одной карточке', cardSub: 'Поделитесь с друзьями',
+    badges: ['Бесплатно', 'Без рекламы', 'Открытый код'], tag: 'Одометр для вашей мыши', cta: 'Скачать бесплатно', sep: ' ' },
+};
+const params = new URLSearchParams(location.search);
+const LANG = TX[params.get('lang')] ? params.get('lang') : 'uz';
+const L = TX[LANG];
+document.documentElement.lang = LANG;
+const $ = (id) => document.getElementById(id);
+const DURATION = 25;
+const DIST = 1284.6, KEYS = 18452, WPM = 62;
+
+// ------------------------------------------------------------ helpers
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const outCubic = (p) => 1 - Math.pow(1 - p, 3);
+const inOutCubic = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+const outBack = (p) => { const c = 1.6; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+const fmt = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, L.sep);
+// a scene's visibility: scenes cross-fade, so the screen never goes empty
+const vis = (t, a, b) => Math.min(a <= 0 ? 1 : outCubic(seg(t, a - 0.3, a + 0.3)), 1 - inOutCubic(seg(t, b - 0.35, b + 0.1)));
+function style(el, o, tf, extra) { el.style.opacity = o; el.style.transform = tf || ''; if (extra) Object.assign(el.style, extra); }
+
+// split a title into words that rise one after another
+function words(el, text) {
+  el.textContent = '';
+  const out = [];
+  text.split('\n').forEach((line, li) => {
+    if (li) el.append(document.createElement('br'));
+    line.split(' ').forEach((w, wi) => {
+      if (wi) el.append(' ');
+      const s = document.createElement('span');
+      s.className = 'w';
+      s.textContent = w;
+      el.append(s);
+      out.push(s);
+    });
+  });
+  return out;
+}
+function riseWords(ws, t, start, gap = 0.07) {
+  ws.forEach((w, i) => {
+    const p = outCubic(seg(t, start + i * gap, start + i * gap + 0.5));
+    w.style.opacity = p;
+    w.style.transform = `translateY(${(1 - p) * 40}px)`;
+  });
+}
+
+// ------------------------------------------------------------ build
+const qW = words($('q'), L.q);
+const kbW = words($('kbTitle'), L.kbTitle);
+const appW = words($('appTitle'), L.appTitle);
+const cardW = words($('cardTitle'), L.cardTitle);
+$('today').textContent = L.today;
+$('lKeys').textContent = L.keys;
+$('lWpm').textContent = L.wpm;
+$('kbPrivacy').textContent = L.kbPrivacy;
+$('cardSub').textContent = L.cardSub;
+$('tag').textContent = L.tag;
+$('ctaB').textContent = L.cta;
+$('os').textContent = 'Windows · macOS · Linux';
+$('imgDash').src = `../site/img/dash-${LANG}.webp`;
+$('imgPop').src = `../site/img/popup-${LANG}.webp`;
+$('imgCard').src = `../site/img/card-${LANG}.webp`;
+
+const chips = L.chips.map((c) => { const d = document.createElement('div'); d.className = 'chip'; d.textContent = c; $('chips').append(d); return d; });
+const badges = L.badges.map((b) => { const d = document.createElement('div'); d.className = 'badge'; d.innerHTML = '<i>✓</i>'; d.append(b); $('badges').append(d); return d; });
+
+// odometer: 4 drums, a dot, the red tenths drum
+const strips = [];
+for (let i = 0; i < 5; i++) {
+  if (i === 4) { const dot = document.createElement('span'); dot.className = 'dot'; $('odo').append(dot); }
+  const d = document.createElement('div');
+  d.className = 'drum' + (i === 4 ? ' red' : '');
+  const s = document.createElement('div');
+  s.className = 'strip';
+  for (let k = 0; k <= 10; k++) { const n = document.createElement('span'); n.textContent = k % 10; s.append(n); }
+  d.append(s);
+  $('odo').append(d);
+  strips.push(s);
+}
+const unit = document.createElement('span'); unit.className = 'unit'; unit.textContent = 'm'; $('odo').append(unit);
+// a real odometer: a wheel turns only while the wheel to its right goes 9 → 0
+function setOdo(v) {
+  const x = v * 10; // in tenths
+  for (let i = 0; i < 5; i++) {
+    const place = Math.pow(10, 4 - i);
+    const below = x % place;
+    let pos = Math.floor(x / place) % 10;
+    if (place === 1) pos = x % 10;
+    else if (below > place - 1) pos += below - (place - 1);
+    strips[i].style.transform = `translateY(${-pos * 196}px)`;
+  }
+}
+
+// keyboard heatmap
+const ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
+const HEAT = { E: 1, A: 0.92, O: 0.9, I: 0.85, N: 0.8, T: 0.78, S: 0.74, R: 0.7, L: 0.62, H: 0.55, D: 0.52, U: 0.5, M: 0.46, K: 0.44, Y: 0.4, B: 0.36, G: 0.34, C: 0.3, P: 0.28, Z: 0.22, V: 0.2, F: 0.18, Q: 0.16, X: 0.12, J: 0.1, W: 0.1, ' ': 1 };
+const RAMP = [[0x2b, 0x3a, 0x52], [0x38, 0x5b, 0x8c], [0x4a, 0x73, 0xad], [0x66, 0x90, 0xc8], [0x8a, 0xae, 0xdb], [0xb1, 0xc9, 0xe8], [0xdf, 0xe9, 0xf7]];
+const ramp = (x) => { const p = clamp(x) * (RAMP.length - 1); const i = Math.min(Math.floor(p), RAMP.length - 2); const f = p - i; return RAMP[i].map((v, j) => Math.round(v + (RAMP[i + 1][j] - v) * f)); };
+const keys = [];
+[...ROWS, ' '].forEach((row, r) => {
+  const div = document.createElement('div');
+  div.className = 'row';
+  for (const ch of row) {
+    const k = document.createElement('div');
+    k.className = 'k' + (ch === ' ' ? ' space' : '');
+    k.textContent = ch === ' ' ? '' : ch;
+    div.append(k);
+    keys.push({ el: k, heat: HEAT[ch] || 0.1, delay: r * 0.12 + Math.random() * 0.5 });
+  }
+  $('kb').append(div);
+});
+// deterministic "random" delays
+keys.forEach((k, i) => { k.delay = (i % 4) * 0.13 + ((i * 7) % 5) * 0.09; });
+
+// cursor path for the first scenes (a lazy S across the screen)
+const P = [[110, 1760], [360, 1080], [720, 1900], [930, 1260]];
+const bez = (p) => { const u = 1 - p; return [0, 1].map((j) => u * u * u * P[0][j] + 3 * u * u * p * P[1][j] + 3 * u * p * p * P[2][j] + p * p * p * P[3][j]); };
+const trail = $('trail').getContext('2d');
+const glow = $('glow').getContext('2d');
+const SCENE_HUE = [[0, [60, 80, 160]], [8, [40, 90, 170]], [12, [70, 70, 150]], [16, [150, 60, 70]], [19.5, [60, 90, 150]], [22, [90, 70, 160]]];
+
+// ------------------------------------------------------------ render(t)
+function render(t) {
+  // background glow drifts and changes colour with the scene
+  let hue = SCENE_HUE[0][1];
+  for (const [at, c] of SCENE_HUE) if (t >= at) hue = c;
+  glow.clearRect(0, 0, 270, 480);
+  const gx = 135 + Math.sin(t * 0.5) * 50, gy = 200 + Math.cos(t * 0.4) * 80;
+  const g = glow.createRadialGradient(gx, gy, 10, gx, gy, 260);
+  g.addColorStop(0, `rgba(${hue.join(',')},0.8)`);
+  g.addColorStop(1, 'rgba(18,20,25,0)');
+  glow.fillStyle = g;
+  glow.fillRect(0, 0, 270, 480);
+
+  // 1. the question, and a cursor drawing a dashed road (0 – 8 s)
+  const s1 = vis(t, 0, 8);
+  style($('s1'), s1, `translateY(${-seg(t, 3.6, 4.4) * 60}px)`);
+  riseWords(qW, t, 0.3);
+  const pp = inOutCubic(seg(t, 0.2, 3.8));
+  trail.clearRect(0, 0, 1080, 1920);
+  trail.globalAlpha = 1 - seg(t, 3.9, 4.5);
+  if (pp > 0) {
+    trail.lineWidth = 10; trail.lineCap = 'round'; trail.setLineDash([34, 26]); trail.strokeStyle = '#82abe6';
+    trail.beginPath();
+    for (let i = 0; i <= 120; i++) { const [x, y] = bez((i / 120) * pp); if (i) trail.lineTo(x, y); else trail.moveTo(x, y); }
+    trail.stroke();
+  }
+  const [cx, cy] = bez(pp);
+  const cur = $('cursor');
+  cur.style.opacity = t < 4.5 ? 1 - seg(t, 4.0, 4.5) : 0;
+  cur.style.transform = `translate(${cx - 6}px, ${cy - 4}px)`;
+
+  // 2. today's odometer (3.8 – 8 s)
+  const s2 = vis(t, 3.8, 8);
+  style($('s2'), s2, `scale(${0.94 + 0.06 * outCubic(seg(t, 3.8, 4.6))})`);
+  setOdo(DIST * inOutCubic(seg(t, 4.1, 6.4)));
+  chips.forEach((c, i) => { const p = seg(t, 6.0 + i * 0.35, 6.5 + i * 0.35); style(c, clamp(p * 1.5), `scale(${0.6 + 0.4 * outBack(p)})`); });
+
+  // 3. keys (8 – 12.2 s)
+  style($('s3'), vis(t, 8, 12.2), `translateY(${(1 - outCubic(seg(t, 8, 8.6))) * 80}px)`);
+  riseWords(kbW, t, 8.1);
+  keys.forEach((k) => {
+    const p = outCubic(seg(t, 8.5 + k.delay, 9.4 + k.delay));
+    const c = ramp(0.08 + 0.92 * k.heat * p);
+    k.el.style.background = `rgb(${c.join(',')})`;
+    k.el.style.color = c[1] > 160 ? '#16181d' : '#dfe6f2';
+    k.el.style.transform = `translateY(${Math.sin(clamp((t - 8.5 - k.delay) / 0.25) * Math.PI) * -8}px)`;
+  });
+  $('nKeys').textContent = fmt(KEYS * outCubic(seg(t, 8.6, 10.6)));
+  $('nWpm').textContent = fmt(WPM * outCubic(seg(t, 8.9, 10.6)));
+  $('s3').querySelector('.lock').style.opacity = seg(t, 10.4, 10.9);
+
+  // 4. the app (12.2 – 16.4 s)
+  style($('s4'), vis(t, 12.2, 16.4));
+  riseWords(appW, t, 12.3);
+  const d = outCubic(seg(t, 12.3, 13.4));
+  $('dash').style.transform = `perspective(1800px) translateY(${(1 - d) * 260 - seg(t, 13.4, 16.4) * 40}px) rotateX(${28 - 22 * d}deg) scale(${0.9 + 0.1 * d})`;
+  $('dash').style.opacity = d;
+  const pop = outBack(seg(t, 13.5, 14.3));
+  $('pop').style.transform = `translate(${(1 - pop) * 420}px, ${-seg(t, 14.3, 16.4) * 30}px) rotate(${(1 - pop) * 8}deg)`;
+  $('pop').style.opacity = clamp(seg(t, 13.5, 13.8));
+
+  // 5. the weekly card (16.4 – 19.8 s)
+  style($('s5'), vis(t, 16.4, 19.8));
+  riseWords(cardW, t, 16.5);
+  const c5 = seg(t, 16.6, 17.6);
+  $('card').style.transform = `perspective(2000px) rotateY(${(1 - outBack(c5)) * -75}deg) translateY(${Math.sin((t - 16.6) * 1.6) * 10}px)`;
+  $('card').style.opacity = clamp(c5 * 2);
+  $('cardSub').style.opacity = seg(t, 17.6, 18.1);
+
+  // 6. trust (19.8 – 22.4 s)
+  style($('s6'), vis(t, 19.8, 22.4));
+  badges.forEach((b, i) => { const p = seg(t, 19.9 + i * 0.28, 20.5 + i * 0.28); style(b, clamp(p * 1.4), `translateX(${(1 - outCubic(p)) * -120}px)`); });
+  $('os').style.opacity = seg(t, 20.9, 21.4);
+
+  // 7. the end (22.4 – 25 s)
+  style($('s7'), vis(t, 22.4, 26));
+  const lg = outBack(seg(t, 22.5, 23.3));
+  $('logo').style.transform = `scale(${0.4 + 0.6 * lg})`;
+  $('logo').style.opacity = clamp(seg(t, 22.5, 22.8));
+  $('ring').style.transform = `rotate(${t * 40}deg)`;
+  $('ring').style.transformOrigin = '50px 50px';
+  style($('word'), seg(t, 22.9, 23.4), `translateY(${(1 - outCubic(seg(t, 22.9, 23.5))) * 40}px)`);
+  $('tag').style.opacity = seg(t, 23.2, 23.7);
+  style($('cta'), seg(t, 23.5, 24.0), `translateY(${(1 - outCubic(seg(t, 23.5, 24.1))) * 40}px)`);
+  $('road').style.backgroundPosition = `${-t * 180}px 0`;
+}
+
+// fit the 1080×1920 film into a browser window when watched live
+function fit() {
+  const s = Math.min(innerWidth / 1080, innerHeight / 1920, 1);
+  $('film').style.transform = s < 1 ? `scale(${s})` : '';
+  $('film').style.transformOrigin = 'center';
+}
+window.render = render;
+window.DURATION = DURATION;
+window.ready = Promise.all([document.fonts.ready, ...[...document.images].map((i) => (i.decode ? i.decode().catch(() => {}) : null))]);
+if (params.has('t')) { render(Number(params.get('t'))); }
+else if (!params.has('capture')) {
+  fit(); addEventListener('resize', fit);
+  const t0 = performance.now();
+  const loop = () => { render(((performance.now() - t0) / 1000) % DURATION); requestAnimationFrame(loop); };
+  window.ready.then(loop);
+}
+</script>
+</body>
+</html>

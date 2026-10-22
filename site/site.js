@@ -42,16 +42,13 @@
       privacy3: "Kod GPL-3.0 litsenziyasi ostida ochiq, shuning uchun buni istalgan kishi tekshira oladi.",
       codeLink: "Kodni GitHub'da ko'rish",
       firstTitle: 'Birinchi marta ochish',
-      firstNote: "Ilova hali Apple yoki Microsoft'ning pullik sertifikati bilan imzolanmagan. Shuning uchun tizim bir marta unga ishonasizmi deb so'raydi.",
-      w1: "Odomouse-Setup.exe ni ishga tushirib, Install ni bosing. Administrator paroli so'ralmaydi.",
-      w2: "«Windows protected your PC» chiqsa, avval More info, keyin Run anyway ni bosing.",
-      w3: "Bugungi hisob vazifalar panelida, soat yonida paydo bo'ladi. Uni bossangiz, kunning qisqa xulosasi ochiladi.",
-      m1: "Odomouse.dmg ni oching va Odomouse'ni Applications papkasiga sudrab tashlang.",
-      m2: "Applications'dan oching. macOS ilovani tekshira olmadim desa, System Settings → Privacy & Security bo'limida Open Anyway ni bosing.",
-      m3: "Klaviaturani sanash uchun Input Monitoring ruxsatini bering: menu bar'dagi belgini o'ng tugma bilan bosib, «Klaviatura uchun ruxsat berish» ni tanlang.",
-      l1: "odomouse_amd64.deb ni ikki marta bosing yoki terminalda: sudo apt install ./odomouse_amd64.deb",
-      l2: "Ilovalar menyusidan Odomouse'ni oching. Ubuntu 22.04, Linux Mint 21, Debian 12 yoki yangirog'i kerak.",
-      l3: "Wayland'da bir marta bajaring: sudo usermod -aG input $USER, so'ng tizimdan chiqib, qayta kiring.",
+      firstNote: "Ilova hali Apple yoki Microsoft'ning pullik sertifikati bilan imzolanmagan, shuning uchun tizim bir marta unga ishonasizmi deb so'raydi. Pastda har bir bosish ko'rsatilgan: tizimingizni tanlang.",
+      dlKicker: '{file} yuklanmoqda…',
+      dlHead: 'Endi uni shunday oching',
+      dlNote: "Bu bir martalik: keyin Odomouse har safar o'zi ishga tushadi.",
+      dlAgain: 'Yuklanmadimi?',
+      dlRetry: 'Qayta urinish',
+      close: 'Yopish',
       againTitle: "Butun kunda qancha bo'larkin?",
       againIdle: "Odomouse buni kun bo'yi, barcha ilovalarda sanaydi va kechqurun ko'rsatadi.",
       againLive: "Siz shu sahifada {dist} yurdingiz, {keys} ta tugma bosdingiz. Odomouse buni kun bo'yi, barcha ilovalarda sanaydi.",
@@ -94,16 +91,13 @@
       privacy3: 'The code is open under the GPL-3.0 licence, so anyone can check this.',
       codeLink: 'Read the code on GitHub',
       firstTitle: 'Opening it for the first time',
-      firstNote: 'The app is not signed with a paid Apple or Microsoft certificate yet, so the system asks once whether you trust it.',
-      w1: 'Run Odomouse-Setup.exe and click Install. No administrator password is needed.',
-      w2: 'If you see "Windows protected your PC", click More info, then Run anyway.',
-      w3: "Today's count appears on the taskbar next to the clock. Click it for a quick look at your day.",
-      m1: 'Open Odomouse.dmg and drag Odomouse into the Applications folder.',
-      m2: 'Open it from Applications. If macOS says it could not verify the app, go to System Settings → Privacy & Security and click Open Anyway.',
-      m3: 'To count keys, allow Input Monitoring: right-click the icon in the menu bar and choose "Allow keyboard access".',
-      l1: 'Double-click odomouse_amd64.deb, or run: sudo apt install ./odomouse_amd64.deb',
-      l2: 'Open Odomouse from the app menu. It needs Ubuntu 22.04, Linux Mint 21, Debian 12 or newer.',
-      l3: 'On Wayland, run once: sudo usermod -aG input $USER, then log out and back in.',
+      firstNote: 'The app is not signed with a paid Apple or Microsoft certificate yet, so the system asks once whether you trust it. Every click is shown below: pick your system.',
+      dlKicker: 'Downloading {file}…',
+      dlHead: 'Now open it like this',
+      dlNote: 'Only once: after this Odomouse starts by itself.',
+      dlAgain: "Download didn't start?",
+      dlRetry: 'Try again',
+      close: 'Close',
       againTitle: 'So how far does it go in a whole day?',
       againIdle: 'Odomouse counts it all day, in every app, and shows you in the evening.',
       againLive: 'On this page you travelled {dist} and pressed {keys} keys. Odomouse counts it all day, in every app.',
@@ -146,16 +140,13 @@
       privacy3: 'Код открыт под лицензией GPL-3.0, так что это может проверить любой.',
       codeLink: 'Код на GitHub',
       firstTitle: 'Первый запуск',
-      firstNote: 'Приложение пока не подписано платным сертификатом Apple или Microsoft, поэтому система один раз спросит, доверяете ли вы ему.',
-      w1: 'Запустите Odomouse-Setup.exe и нажмите Install. Пароль администратора не нужен.',
-      w2: 'Если появится «Windows protected your PC», нажмите More info, затем Run anyway.',
-      w3: 'Счёт за сегодня появится на панели задач рядом с часами. Нажмите на него, чтобы увидеть сводку дня.',
-      m1: 'Откройте Odomouse.dmg и перетащите Odomouse в папку Applications.',
-      m2: 'Откройте его из Applications. Если macOS не смогла проверить приложение, зайдите в System Settings → Privacy & Security и нажмите Open Anyway.',
-      m3: 'Чтобы считать клавиши, разрешите Input Monitoring: нажмите правой кнопкой на значок в строке меню и выберите «Разрешить доступ к клавиатуре».',
-      l1: 'Дважды нажмите на odomouse_amd64.deb или выполните: sudo apt install ./odomouse_amd64.deb',
-      l2: 'Откройте Odomouse из меню приложений. Нужна Ubuntu 22.04, Linux Mint 21, Debian 12 или новее.',
-      l3: 'В Wayland один раз выполните: sudo usermod -aG input $USER, затем выйдите из системы и войдите снова.',
+      firstNote: 'Приложение пока не подписано платным сертификатом Apple или Microsoft, поэтому система один раз спросит, доверяете ли вы ему. Ниже показан каждый клик: выберите свою систему.',
+      dlKicker: 'Загружается {file}…',
+      dlHead: 'Теперь откройте его так',
+      dlNote: 'Это нужно один раз: дальше Odomouse запускается сам.',
+      dlAgain: 'Загрузка не началась?',
+      dlRetry: 'Ещё раз',
+      close: 'Закрыть',
       againTitle: 'А сколько набежит за целый день?',
       againIdle: 'Odomouse считает это весь день во всех приложениях и показывает вечером.',
       againLive: 'На этой странице вы прошли {dist} и нажали клавиш: {keys}. Odomouse считает это весь день во всех приложениях.',
@@ -453,14 +444,50 @@
   });
   window.addEventListener('resize', sizeCanvas);
 
-  // ---------------------------------------------------------------- tabs
+  // ---------------------------------------------------- the install guide
+  // one "video" in the page (tabs pick the system) and one in the dialog
+  // that opens after a download button, for the system that was picked
+  const G = window.OdomouseGuide;
+  let firstGuide = null;
+  let dlGuide = null;
   function showOs(which) {
     for (const b of document.querySelectorAll('.os-tabs button')) {
       const on = b.dataset.os === which;
       b.setAttribute('aria-selected', String(on));
       b.tabIndex = on ? 0 : -1;
-      $(`steps-${b.dataset.os}`).hidden = !on;
+      if (on) $('first-guide').setAttribute('aria-labelledby', b.id);
     }
+    if (!G) return;
+    if (!firstGuide) firstGuide = G.mount($('first-guide'), { os: which, lang });
+    else firstGuide.setOs(which);
+  }
+
+  const dialog = $('dl-dialog');
+  function openGuideFor(which) {
+    if (!G || !dialog || typeof dialog.showModal !== 'function') return false;
+    $('dl-kicker').textContent = t('dlKicker', { file: FILES[which] });
+    $('dl-retry').href = BASE + FILES[which];
+    if (!dlGuide) dlGuide = G.mount($('dl-guide'), { os: which, lang });
+    else { dlGuide.setLang(lang); dlGuide.setOs(which); dlGuide.jump(0); }
+    if (firstGuide) firstGuide.pause();
+    dialog.showModal();
+    dlGuide.play();
+    return true;
+  }
+  if (dialog) {
+    $('dl-close').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', () => { if (dlGuide) dlGuide.pause(); });
+    // a click on the dimmed backdrop closes it too
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+  }
+  // the download itself goes on as usual; the dialog shows what comes next
+  for (const a of document.querySelectorAll('a.download[data-os]')) {
+    a.setAttribute('download', '');
+    a.addEventListener('click', () => {
+      const which = a.dataset.os;
+      showOs(which);
+      setTimeout(() => openGuideFor(which), 60);
+    });
   }
   const tabs = [...document.querySelectorAll('.os-tabs button')];
   tabs.forEach((b, i) => {
@@ -485,6 +512,8 @@
     for (const img of document.querySelectorAll('img[data-src]')) img.src = img.dataset.src.replace('{lang}', lang);
     for (const b of document.querySelectorAll('.langs button')) b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
     SIGNS.forEach((_, i) => { signEls[i].querySelector('b').textContent = T[lang].signs[i]; });
+    if (firstGuide) firstGuide.setLang(lang);
+    if (dlGuide) dlGuide.setLang(lang);
     renderDownloads();
     render();
   }

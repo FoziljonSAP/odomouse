@@ -11,6 +11,7 @@
   <link rel="icon" href="favicon.png">
   <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
   <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="guide.css">
 </head>
 <body>
   <!-- the night road: the hero, where the page measures the visitor -->
@@ -128,21 +129,7 @@
         <button role="tab" id="tab-mac" aria-controls="steps-mac" data-os="mac">macOS</button>
         <button role="tab" id="tab-linux" aria-controls="steps-linux" data-os="linux">Linux</button>
       </div>
-      <ol class="steps" id="steps-windows" role="tabpanel" aria-labelledby="tab-windows">
-        <li data-t="w1"></li>
-        <li data-t="w2"></li>
-        <li data-t="w3"></li>
-      </ol>
-      <ol class="steps" id="steps-mac" role="tabpanel" aria-labelledby="tab-mac" hidden>
-        <li data-t="m1"></li>
-        <li data-t="m2"></li>
-        <li data-t="m3"></li>
-      </ol>
-      <ol class="steps" id="steps-linux" role="tabpanel" aria-labelledby="tab-linux" hidden>
-        <li data-t="l1"></li>
-        <li data-t="l2"></li>
-        <li data-t="l3"></li>
-      </ol>
+      <div id="first-guide" role="tabpanel"></div>
     </section>
 
     <section class="again" aria-labelledby="again-title">
@@ -161,6 +148,21 @@
     <p><span data-t="foot">Odomouse is free software under the GPL-3.0 licence.</span> <a class="link" href="https://github.com/FoziljonSAP/odomouse">GitHub</a></p>
   </footer>
 
+  <!-- after a download button: the steps for that system -->
+  <dialog class="dl-dialog" id="dl-dialog" aria-labelledby="dl-head">
+    <div class="dl-top">
+      <div>
+        <p class="dl-kicker" id="dl-kicker"></p>
+        <h2 id="dl-head" data-t="dlHead">Now open it like this</h2>
+      </div>
+      <button class="dl-close" id="dl-close" type="button" data-t="close">Close</button>
+    </div>
+    <p class="note" data-t="dlNote">Only once: after this Odomouse starts by itself.</p>
+    <div id="dl-guide"></div>
+    <p class="dl-again"><span data-t="dlAgain">Download didn't start?</span> <a class="link" id="dl-retry" href="#" download data-t="dlRetry">Try again</a></p>
+  </dialog>
+
+  <script src="guide.js"></script>
   <script src="site.js"></script>
 </body>
 </html>
