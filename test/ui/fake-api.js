@@ -234,6 +234,7 @@
     openPermissions: async () => { window.__perm = true; },
     checkUpdatesNow: async () => ({ current: '1.1.0', update: F.update ? { version: '1.2.0' } : null }),
     installUpdate: async () => { window.__installing = true; },
+    openSupport: async () => { window.__support = true; },
     quit: async () => {},
   };
 })();

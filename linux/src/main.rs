@@ -181,6 +181,10 @@ impl App {
                 self.act(Action::Update);
                 "null".into()
             }
+            "openSupport" => {
+                let _ = Command::new("xdg-open").arg("https://github.com/sponsors/FoziljonSAP").stdout(Stdio::null()).stderr(Stdio::null()).spawn();
+                "null".into()
+            }
             "getLive" | "getDashboard" | "getWrapped" | "getUpdate" | "resetData" | "clearApps" => {
                 let out = self.with(|e, t| e.call(&method, &args, t)).to_string();
                 if method == "resetData" {

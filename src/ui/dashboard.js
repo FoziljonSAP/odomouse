@@ -431,7 +431,9 @@
       el('div', { class: 'row-actions' },
         el('button', { class: 'btn', text: t('showGuide'), onclick: () => set({ onboardingDone: false, seenDashboard: false }) }),
         PLATFORM === 'windows' && d.hooksRunning ? null
-          : el('button', { class: 'btn', text: t(d.hooksRunning ? 'permissions' : 'givePermission'), onclick: () => api.openPermissions() }))));
+          : el('button', { class: 'btn', text: t(d.hooksRunning ? 'permissions' : 'givePermission'), onclick: () => api.openPermissions() }),
+        NATIVE && api.openSupport ? el('button', { class: 'btn', text: t('support'), onclick: () => api.openSupport() }) : null),
+      NATIVE && api.openSupport ? el('p', { class: 'note', text: t('supportNote') }) : null));
 
     host.append(wrap);
   }

@@ -75,6 +75,10 @@ Odomouse stores per-key counts, never the order of keys, text, passwords, window
 
 Odomouse was called *Mishka Tracker* before 1.0; on first start it copies statistics from the old folder.
 
+## Support
+
+Odomouse is free and has no ads. If it is useful to you, you can support its development on [GitHub Sponsors](https://github.com/sponsors/FoziljonSAP).
+
 ## Licence
 
 Copyright (C) 2026 the Odomouse authors. Odomouse is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License, version 3, as published by the Free Software Foundation. It comes with no warranty. See [LICENSE](LICENSE).

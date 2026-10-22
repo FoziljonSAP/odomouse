@@ -469,6 +469,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSW
         case "installUpdate":
             reply("null")
             installUpdate()
+        case "openSupport":
+            reply("null")
+            NSWorkspace.shared.open(URL(string: "https://github.com/sponsors/FoziljonSAP")!)
         case "updateSettings":
             let result = core.call(method, argsJSON)
             reloadSettings()

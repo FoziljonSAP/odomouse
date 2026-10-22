@@ -182,6 +182,8 @@ namespace Odomouse
             if (v != null) updateItem.Text = S("updateMenu").Replace("{v}", v);
         }
 
+        private const string SupportUrl = "https://github.com/sponsors/FoziljonSAP";
+
         private static void OpenUrl(string url)
         {
             if (string.IsNullOrEmpty(url) || !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) return;
@@ -475,6 +477,10 @@ namespace Odomouse
                 case "installUpdate":
                     reply("null");
                     InstallUpdate();
+                    break;
+                case "openSupport":
+                    reply("null");
+                    OpenUrl(SupportUrl);
                     break;
                 case "updateSettings":
                     {

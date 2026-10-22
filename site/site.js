@@ -56,6 +56,8 @@
       againIdle: "Odomouse buni kun bo'yi, barcha ilovalarda sanaydi va kechqurun ko'rsatadi.",
       againLive: "Siz shu sahifada {dist} yurdingiz, {keys} ta tugma bosdingiz. Odomouse buni kun bo'yi, barcha ilovalarda sanaydi.",
       foot: 'Odomouse GPL-3.0 litsenziyasi ostidagi bepul dastur.',
+      support: "Odomouse bepul va reklamasiz. Yoqqan bo'lsa, rivojlanishini qo'llab-quvvatlashingiz mumkin:",
+      supportLink: 'GitHub Sponsors',
     },
     en: {
       title: 'Odomouse: how far does your cursor travel?',
@@ -106,6 +108,8 @@
       againIdle: 'Odomouse counts it all day, in every app, and shows you in the evening.',
       againLive: 'On this page you travelled {dist} and pressed {keys} keys. Odomouse counts it all day, in every app.',
       foot: 'Odomouse is free software under the GPL-3.0 licence.',
+      support: 'Odomouse is free and has no ads. If you like it, you can support its development:',
+      supportLink: 'GitHub Sponsors',
     },
     ru: {
       title: 'Odomouse: сколько проходит ваш курсор?',
@@ -156,6 +160,8 @@
       againIdle: 'Odomouse считает это весь день во всех приложениях и показывает вечером.',
       againLive: 'На этой странице вы прошли {dist} и нажали клавиш: {keys}. Odomouse считает это весь день во всех приложениях.',
       foot: 'Odomouse — свободная программа под лицензией GPL-3.0.',
+      support: 'Odomouse бесплатна и без рекламы. Если она вам нравится, можно поддержать её развитие:',
+      supportLink: 'GitHub Sponsors',
     },
   };
 

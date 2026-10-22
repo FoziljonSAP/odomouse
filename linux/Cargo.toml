@@ -1,6 +1,6 @@
 [package]
 name = "odomouse"
-version = "1.1.0"
+version = "1.1.1"
 edition = "2021"
 description = "Odomouse for Linux: tray item, input counting, dashboard in the browser."
 license = "GPL-3.0-only"

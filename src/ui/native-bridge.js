@@ -122,6 +122,7 @@
     getUpdate: () => call('getUpdate'),
     checkUpdatesNow: () => call('checkUpdatesNow'),
     installUpdate: () => call('installUpdate'),
+    openSupport: () => call('openSupport'),
     quit: () => call('quit'),
   };
 })();

@@ -416,6 +416,8 @@ main { max-width: 1160px; margin: 0 auto; padding-inline: 24px; }
   color: var(--muted);
   font-size: 14px;
 }
+.foot .support { color: var(--ink); margin-bottom: 10px; }
+.foot .support span[aria-hidden] { color: #c94a41; }
 
 /* ------------------------------------------------------------ narrow */
 

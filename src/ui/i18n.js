@@ -194,6 +194,12 @@
     updateStarted: ['Yuklanmoqda… Tayyor bo\'lgach, yangi versiya o\'zi ochiladi.', 'Downloading… The new version opens by itself when it is ready.', 'Загружается… Новая версия откроется сама.'],
     updateStartedLinux: ["Yuklanmoqda… Keyin o'rnatish oynasi ochiladi.", 'Downloading… Then the installer window opens.', 'Загружается… Затем откроется окно установки.'],
     help: ['Yordam', 'Help', 'Помощь'],
+    support: ["♥ Qo'llab-quvvatlash", '♥ Support Odomouse', '♥ Поддержать Odomouse'],
+    supportNote: [
+      "Odomouse bepul va reklamasiz. Yoqqan bo'lsa, GitHub Sponsors orqali qo'llab-quvvatlashingiz mumkin.",
+      'Odomouse is free and has no ads. If you like it, you can support it on GitHub Sponsors.',
+      'Odomouse бесплатна и без рекламы. Если она вам нравится, её можно поддержать на GitHub Sponsors.',
+    ],
     showGuide: ["Qo'llanmani qayta ko'rsatish", 'Show the guide again', 'Показать подсказки снова'],
     permissions: ['Ruxsatlar', 'Permissions', 'Разрешения'],
     givePermission: ['Ruxsat berish', 'Give permission', 'Дать разрешение'],
