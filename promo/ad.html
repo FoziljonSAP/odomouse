@@ -38,6 +38,11 @@ body { display: grid; place-items: center; min-height: 100vh; }
 .kicker { position: absolute; left: 0; right: 0; text-align: center; font-weight: 700; font-size: 38px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--road); }
 .sub { position: absolute; left: 80px; right: 80px; text-align: center; font-weight: 500; font-size: 44px; line-height: 1.3; color: var(--cream-2); white-space: pre-line; }
 
+#q, #appTitle, #cardTitle { top: 300px; }
+#kbTitle { top: 330px; }
+#today { top: 680px; }
+#cardSub { top: 1540px; }
+
 /* odometer */
 .odo { position: absolute; left: 50%; top: 760px; translate: -50% 0; display: flex; align-items: center; gap: 14px; padding: 26px; border-radius: 34px; background: #1b1d23; box-shadow: 0 40px 90px -30px #000, inset 0 0 0 2px #2a2d35; }
 .drum { width: 136px; height: 196px; border-radius: 18px; overflow: hidden; position: relative; background: linear-gradient(#202227, #34363e 50%, #202227); }
@@ -85,6 +90,62 @@ body { display: grid; place-items: center; min-height: 100vh; }
 .cta b { font-weight: 800; font-size: 58px; padding: 30px 64px; border-radius: 999px; background: var(--cream); color: #16181d; white-space: nowrap; }
 .cta span { font-weight: 700; font-size: 44px; color: var(--road); white-space: nowrap; }
 .road { position: absolute; left: 0; right: 0; bottom: 120px; height: 10px; background: repeating-linear-gradient(90deg, var(--road) 0 60px, transparent 60px 100px); opacity: .55; }
+
+/* ---------------------------------------------- 16:9 (1920×1080) */
+#film.wide { width: 1920px; height: 1080px; }
+.wide .title { left: 160px; right: 160px; font-size: 80px; }
+.wide #q { top: 120px; }
+.wide #today { top: 380px; }
+.wide .odo { top: 440px; }
+.wide .chips { top: 800px; display: flex; justify-content: center; gap: 26px; }
+.wide #kbTitle { top: 70px; font-size: 72px; }
+.wide .kb { top: 300px; scale: 0.92; transform-origin: 50% 0; }
+.wide .stats { top: 720px; gap: 120px; }
+.wide .stat b { font-size: 110px; }
+.wide .lock { top: 950px; }
+.wide #appTitle, .wide #cardTitle { top: 80px; }
+.wide #appTitle { left: 100px; right: auto; width: 640px; top: 380px; text-align: left; font-size: 76px; }
+.wide #dash { left: 780px; width: 1040px; top: 190px; }
+.wide #pop { width: 290px; right: 70px; top: 500px; }
+.wide #cardTitle { left: 140px; right: auto; width: 820px; top: 340px; text-align: left; font-size: 84px; }
+.wide #cardSub { left: 140px; right: auto; width: 820px; top: 600px; text-align: left; }
+.wide #card { left: 1180px; width: 560px; top: 160px; margin-left: 0; }
+.wide .badges { top: 200px; gap: 28px; }
+.wide .os { top: 800px; }
+.wide .logo { top: 120px; width: 300px; height: 300px; margin-left: -150px; }
+.wide .word { top: 500px; font-size: 130px; }
+.wide .tag { top: 670px; }
+.wide .cta { top: 780px; }
+.wide .road { bottom: 60px; }
+
+/* ---------------------------------------------- 1:1 (1080×1080) */
+#film.square { width: 1080px; height: 1080px; }
+.square .title { left: 50px; right: 50px; font-size: 70px; }
+.square #q { top: 110px; }
+.square #today { top: 330px; }
+.square .odo { top: 380px; scale: 0.86; transform-origin: 50% 0; }
+.square .chips { top: 650px; gap: 18px; }
+.square .chip { font-size: 40px; padding: 14px 30px; }
+.square #kbTitle { top: 70px; font-size: 64px; }
+.square .kb { top: 270px; scale: 0.86; transform-origin: 50% 0; }
+.square .stats { top: 640px; }
+.square .stat b { font-size: 104px; }
+.square .lock { top: 900px; font-size: 34px; }
+.square #appTitle, .square #cardTitle { top: 70px; font-size: 64px; }
+.square #dash { left: 90px; width: 900px; top: 300px; }
+.square #pop { width: 250px; right: 60px; top: 420px; border-radius: 26px; }
+.square #card { width: 480px; top: 270px; margin-left: -240px; border-radius: 28px; }
+.square #cardSub { top: 900px; font-size: 40px; }
+.square .badges { top: 190px; gap: 26px; }
+.square .badge { font-size: 72px; }
+.square .badge i { width: 84px; height: 84px; font-size: 46px; }
+.square .os { top: 720px; font-size: 46px; }
+.square .logo { top: 90px; width: 280px; height: 280px; margin-left: -140px; }
+.square .word { top: 450px; font-size: 120px; }
+.square .tag { top: 610px; font-size: 42px; }
+.square .cta { top: 720px; }
+.square .cta b { font-size: 50px; padding: 26px 56px; }
+.square .road { bottom: 70px; }
 </style>
 </head>
 <body>
@@ -94,31 +155,31 @@ body { display: grid; place-items: center; min-height: 100vh; }
 
   <!-- 1–2: the question and today's distance -->
   <div class="layer" id="s1">
-    <div class="title" id="q" style="top:300px"></div>
+    <div class="title" id="q"></div>
   </div>
   <div class="layer" id="s2">
-    <div class="kicker" id="today" style="top:680px"></div>
+    <div class="kicker" id="today"></div>
     <div class="odo" id="odo"></div>
     <div class="chips" id="chips"></div>
   </div>
   <!-- 3: keys -->
   <div class="layer" id="s3">
-    <div class="title" id="kbTitle" style="top:330px"></div>
+    <div class="title" id="kbTitle"></div>
     <div class="kb" id="kb"></div>
     <div class="stats"><div class="stat"><b id="nKeys">0</b><span id="lKeys"></span></div><div class="stat"><b id="nWpm">0</b><span id="lWpm"></span></div></div>
     <div class="lock"><i>✓</i><span id="kbPrivacy"></span></div>
   </div>
   <!-- 4: the app -->
   <div class="layer" id="s4">
-    <div class="title" id="appTitle" style="top:300px"></div>
+    <div class="title" id="appTitle"></div>
     <div class="shot" id="dash"><img id="imgDash" alt=""></div>
     <div class="shot" id="pop"><img id="imgPop" alt=""></div>
   </div>
   <!-- 5: the weekly card -->
   <div class="layer" id="s5">
-    <div class="title" id="cardTitle" style="top:300px"></div>
+    <div class="title" id="cardTitle"></div>
     <div class="shot" id="card"><img id="imgCard" alt=""></div>
-    <div class="sub" id="cardSub" style="top:1540px"></div>
+    <div class="sub" id="cardSub"></div>
   </div>
   <!-- 6: trust -->
   <div class="layer" id="s6">
@@ -158,6 +219,13 @@ const L = TX[LANG];
 document.documentElement.lang = LANG;
 const $ = (id) => document.getElementById(id);
 const DURATION = 25;
+// tall 1080×1920 (Reels, TikTok, Shorts), wide 1920×1080 (YouTube), square 1080×1080 (feed)
+const RATIO = ['wide', 'square'].includes(params.get('ratio')) ? params.get('ratio') : 'tall';
+const SIZE = { tall: [1080, 1920], wide: [1920, 1080], square: [1080, 1080] }[RATIO];
+const [W, H] = SIZE;
+$('film').classList.add(RATIO);
+$('trail').width = W;
+$('trail').height = H;
 const DIST = 1284.6, KEYS = 18452, WPM = 62;
 
 // ------------------------------------------------------------ helpers
@@ -265,7 +333,11 @@ const keys = [];
 keys.forEach((k, i) => { k.delay = (i % 4) * 0.13 + ((i * 7) % 5) * 0.09; });
 
 // cursor path for the first scenes (a lazy S across the screen)
-const P = [[110, 1760], [360, 1080], [720, 1900], [930, 1260]];
+const P = {
+  tall: [[110, 1760], [360, 1080], [720, 1900], [930, 1260]],
+  wide: [[120, 1000], [600, 380], [1200, 1150], [1780, 520]],
+  square: [[90, 1000], [300, 520], [760, 1120], [990, 480]],
+}[RATIO];
 const bez = (p) => { const u = 1 - p; return [0, 1].map((j) => u * u * u * P[0][j] + 3 * u * u * p * P[1][j] + 3 * u * p * p * P[2][j] + p * p * p * P[3][j]); };
 const trail = $('trail').getContext('2d');
 const glow = $('glow').getContext('2d');
@@ -289,7 +361,7 @@ function render(t) {
   style($('s1'), s1, `translateY(${-seg(t, 3.6, 4.4) * 60}px)`);
   riseWords(qW, t, 0.3);
   const pp = inOutCubic(seg(t, 0.2, 3.8));
-  trail.clearRect(0, 0, 1080, 1920);
+  trail.clearRect(0, 0, W, H);
   trail.globalAlpha = 1 - seg(t, 3.9, 4.5);
   if (pp > 0) {
     trail.lineWidth = 10; trail.lineCap = 'round'; trail.setLineDash([34, 26]); trail.strokeStyle = '#82abe6';
@@ -360,12 +432,13 @@ function render(t) {
 
 // fit the 1080×1920 film into a browser window when watched live
 function fit() {
-  const s = Math.min(innerWidth / 1080, innerHeight / 1920, 1);
+  const s = Math.min(innerWidth / W, innerHeight / H, 1);
   $('film').style.transform = s < 1 ? `scale(${s})` : '';
   $('film').style.transformOrigin = 'center';
 }
 window.render = render;
 window.DURATION = DURATION;
+window.SIZE = SIZE;
 window.ready = Promise.all([document.fonts.ready, ...[...document.images].map((i) => (i.decode ? i.decode().catch(() => {}) : null))]);
 if (params.has('t')) { render(Number(params.get('t'))); }
 else if (!params.has('capture')) {
